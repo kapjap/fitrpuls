@@ -67,12 +67,18 @@ public class HomeMenuActivity extends AppCompatActivity {
         });
         ImageView buttonBack = findViewById(R.id.buttonBack);
         buttonBack.setOnClickListener(v -> {
-            auth.signOut();
+            new androidx.appcompat.app.AlertDialog.Builder(this)
+                    .setTitle(R.string.home_exit_title)
+                    .setMessage(R.string.home_exit_message)
+                    .setNegativeButton(android.R.string.cancel, null)
+                    .setPositiveButton(R.string.logout, (dialog, which) -> {
+                        auth.signOut();
 
-            Intent intent = new Intent(HomeMenuActivity.this, MainActivity.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-            startActivity(intent);
-            finish();
+                        Intent intent = new Intent(HomeMenuActivity.this, MainActivity.class);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                        startActivity(intent);
+                        finish();
+                    }).show();
         });
         FrameLayout cardGyms = findViewById(R.id.cardGyms);
 

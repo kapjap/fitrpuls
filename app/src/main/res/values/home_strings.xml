@@ -1,0 +1,44 @@
+<?xml version="1.0" ?>
+<resources>
+    
+
+    <string name="home_kicker">ТВОЙ РИТМ. ТВОЙ ПРОГРЕСС.</string>
+    
+
+    <string name="home_title_new">Время для себя</string>
+    
+
+    <string name="home_subtitle_new">Каждая тренировка — шаг вперёд.</string>
+    
+
+    <string name="home_workout_hint">Планы, упражнения и новые достижения</string>
+    
+
+    <string name="home_workout_action">Открыть тренировки →</string>
+    
+
+    <string name="home_section">Моё пространство</string>
+    
+
+    <string name="home_exit_title">Выйти из аккаунта?</string>
+    
+
+    <string name="home_exit_message">Для следующего входа потребуется авторизация.</string>
+    
+
+    <string name="home_detail_0">История и результаты</string>
+    
+
+    <string name="home_detail_1">Всё важное под рукой</string>
+    
+
+    <string name="home_detail_2">Найдите место для тренировки</string>
+    
+
+    <string name="home_detail_3">Вдохновение и полезные советы</string>
+    
+
+    <string name="home_detail_4">Оформление и напоминания</string>
+    
+
+</resources>

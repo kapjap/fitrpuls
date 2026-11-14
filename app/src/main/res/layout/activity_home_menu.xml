@@ -1,410 +1,68 @@
-<?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/main"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/app_background"
-    android:paddingStart="20dp"
-    android:paddingTop="24dp"
-    android:paddingEnd="20dp"
-    android:paddingBottom="20dp"
-    tools:context=".HomeMenuActivity">
-
-    <ImageView
-        android:id="@+id/buttonBack"
-        android:layout_width="36dp"
-        android:layout_height="36dp"
-        android:layout_marginStart="4dp"
-        android:layout_marginTop="8dp"
-        android:background="?attr/selectableItemBackgroundBorderless"
-        android:clickable="true"
-        android:contentDescription="@string/back_icon"
-        android:focusable="true"
-        android:padding="8dp"
-        android:src="@drawable/baseline_arrow_back_24"
-        android:tint="@color/app_accent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <TextView
-        android:id="@+id/textWelcome"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="4dp"
-        android:layout_marginTop="52dp"
-        android:fontFamily="@font/roboto_bold"
-        android:text="@string/welcome_back"
-        android:textColor="@color/app_text_primary"
-        android:textSize="28sp"
-        android:textStyle="bold"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <TextView
-        android:id="@+id/textSubtitle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:fontFamily="@font/roboto"
-        android:text="@string/home_subtitle"
-        android:textColor="@color/app_text_secondary"
-        android:textSize="16sp"
-        app:layout_constraintStart_toStartOf="@id/textWelcome"
-        app:layout_constraintTop_toBottomOf="@id/textWelcome" />
-
-    <LinearLayout
-        android:id="@+id/profileContainer"
-        android:layout_width="wrap_content"
-        android:layout_height="40dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="4dp"
-        android:background="@drawable/bg_profile_button"
-        android:clickable="true"
-        android:focusable="true"
-        android:foreground="?attr/selectableItemBackgroundBorderless"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        android:paddingStart="12dp"
-        android:paddingEnd="12dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toEndOf="@+id/buttonBack"
-        app:layout_constraintTop_toTopOf="parent">
-
-        <ImageView
-            android:layout_width="25dp"
-            android:layout_height="25dp"
-            android:contentDescription="@string/profile"
-            android:src="@drawable/ic_profile_person"
-            android:tint="@color/app_accent" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="6dp"
-            android:text="@string/profile"
-            android:textColor="@color/app_accent"
-            android:textSize="15sp" />
-    </LinearLayout>
-
-    <FrameLayout
-        android:id="@+id/cardWorkouts"
-        android:layout_width="0dp"
-        android:layout_height="120dp"
-        android:layout_marginTop="28dp"
-        android:background="@drawable/bg_menu_card"
-        android:clickable="true"
-        android:focusable="true"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/textSubtitle">
-
-        <ImageView
-            android:id="@+id/imageWorkoutBanner"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:alpha="0.60"
-            android:scaleType="centerCrop"
-            android:src="@drawable/banner_fitpulsee"
-            android:tag="keep_image" />
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="#18000000" />
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:padding="16dp">
-
-            <ImageView
-                android:id="@+id/iconWorkouts"
-                android:layout_width="34dp"
-                android:layout_height="34dp"
-                android:contentDescription="@string/workouts"
-                android:src="@drawable/workoutss" />
-
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="14dp"
-                android:orientation="vertical">
-
-                <TextView
-                    android:id="@+id/textWorkouts"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:fontFamily="@font/roboto_bold"
-                    android:text="@string/workouts_upper"
-                    android:textColor="#FFFFFF"
-                    android:textSize="20sp"
-                    android:textStyle="bold"
-                    android:tag="keep_text_color" />
-
-                <TextView
-                    android:id="@+id/textWorkoutsSub"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="6dp"
-                    android:fontFamily="@font/roboto"
-                    android:text="@string/start_workout"
-                    android:textColor="#E5E7EB"
-                    android:textSize="14sp"
-                    android:tag="keep_text_color" />
+<?xml version="1.0" ?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android" android:id="@+id/main" android:layout_width="match_parent" android:layout_height="match_parent" android:fillViewport="true" android:background="@color/app_background" android:clipToPadding="false">
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="24dp">
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center_vertical">
+            <ImageView android:id="@+id/buttonBack" android:layout_width="48dp" android:layout_height="48dp" android:padding="12dp" android:src="@drawable/baseline_arrow_back_24" android:tint="@color/app_text_secondary" android:contentDescription="@string/logout" android:background="?attr/selectableItemBackgroundBorderless" android:clickable="true" android:focusable="true"/>
+            <TextView android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="GymNotes" android:textSize="20sp" android:textStyle="bold" android:textColor="@color/app_text_primary"/>
+            <LinearLayout android:id="@+id/profileContainer" android:layout_width="48dp" android:layout_height="48dp" android:gravity="center" android:background="@drawable/bg_home_card" android:foreground="?attr/selectableItemBackground" android:contentDescription="@string/profile" android:clickable="true" android:focusable="true">
+                <ImageView android:layout_width="24dp" android:layout_height="24dp" android:importantForAccessibility="no" android:src="@drawable/ic_profile_person" android:tint="@color/app_accent"/>
             </LinearLayout>
         </LinearLayout>
-    </FrameLayout>
-
-    <LinearLayout
-        android:id="@+id/cardNotes"
-        android:layout_width="0dp"
-        android:layout_height="140dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="10dp"
-        android:background="@drawable/bg_menu_card"
-        android:clickable="true"
-        android:focusable="true"
-        android:orientation="vertical"
-        android:padding="18dp"
-        app:layout_constraintEnd_toStartOf="@id/cardNews"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/cardWorkouts"
-        app:layout_constraintWidth_percent="0.48">
-
-        <ImageView
-            android:id="@+id/iconNotes"
-            android:layout_width="34dp"
-            android:layout_height="34dp"
-            android:contentDescription="@string/notes"
-            android:src="@drawable/notes" />
-
-        <TextView
-            android:id="@+id/textNotes"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:fontFamily="@font/roboto_bold"
-            android:text="@string/notes"
-            android:textColor="@color/app_text_primary"
-            android:textSize="17sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:id="@+id/textNotesSub"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:fontFamily="@font/roboto"
-            android:text="@string/notes_subtitle"
-            android:textColor="@color/app_text_secondary"
-            android:textSize="12sp" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/cardNews"
-        android:layout_width="0dp"
-        android:layout_height="140dp"
-        android:layout_marginStart="10dp"
-        android:layout_marginTop="16dp"
-        android:background="@drawable/bg_menu_card"
-        android:clickable="true"
-        android:focusable="true"
-        android:orientation="vertical"
-        android:padding="18dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/cardNotes"
-        app:layout_constraintTop_toBottomOf="@id/cardWorkouts"
-        app:layout_constraintWidth_percent="0.48">
-
-        <ImageView
-            android:id="@+id/iconNews"
-            android:layout_width="34dp"
-            android:layout_height="34dp"
-            android:contentDescription="@string/news"
-            android:src="@drawable/news" />
-
-        <TextView
-            android:id="@+id/textNews"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:fontFamily="@font/roboto_bold"
-            android:text="@string/news"
-            android:textColor="@color/app_text_primary"
-            android:textSize="17sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:id="@+id/textNewsSub"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:fontFamily="@font/roboto"
-            android:text="@string/fitness_news"
-            android:textColor="@color/app_text_secondary"
-            android:textSize="12sp" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/cardProgress"
-        android:layout_width="0dp"
-        android:layout_height="130dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="10dp"
-        android:background="@drawable/bg_menu_card"
-        android:clickable="true"
-        android:focusable="true"
-        android:orientation="vertical"
-        android:padding="16dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/cardSettings"
-        app:layout_constraintTop_toBottomOf="@id/cardNotes"
-        app:layout_constraintWidth_percent="0.48">
-
-        <ImageView
-            android:id="@+id/iconProgress"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
-            android:contentDescription="@string/progress"
-            android:src="@drawable/progress_icon"
-            android:tint="@color/app_accent" />
-
-        <TextView
-            android:id="@+id/textProgress"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:fontFamily="@font/roboto_bold"
-            android:text="@string/progress"
-            android:textColor="@color/app_text_primary"
-            android:textSize="16sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:id="@+id/textProgressSub"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
-            android:fontFamily="@font/roboto"
-            android:text="@string/progress_subtitle"
-            android:textColor="@color/app_text_secondary"
-            android:textSize="10sp" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/cardSettings"
-        android:layout_width="0dp"
-        android:layout_height="130dp"
-        android:layout_marginStart="10dp"
-        android:layout_marginTop="16dp"
-        android:background="@drawable/bg_menu_card"
-        android:clickable="true"
-        android:focusable="true"
-        android:orientation="vertical"
-        android:padding="16dp"
-        app:layout_constraintBottom_toBottomOf="@id/cardProgress"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/cardProgress"
-        app:layout_constraintTop_toTopOf="@id/cardProgress"
-        app:layout_constraintVertical_bias="1.0"
-        app:layout_constraintWidth_percent="0.48">
-
-        <ImageView
-            android:id="@+id/iconSettings"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
-            android:contentDescription="@string/settings"
-            android:src="@drawable/settings" />
-
-        <TextView
-            android:id="@+id/textSettings"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:fontFamily="@font/roboto_bold"
-            android:text="@string/settings"
-            android:textColor="@color/app_text_primary"
-            android:textSize="16sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:id="@+id/textSettingsSub"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
-            android:fontFamily="@font/roboto"
-            android:text="@string/settings_subtitle"
-            android:textColor="@color/app_text_secondary"
-            android:textSize="10sp" />
-    </LinearLayout>
-
-    <FrameLayout
-        android:id="@+id/cardGyms"
-        android:layout_width="0dp"
-        android:layout_height="110dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginBottom="16dp"
-        android:background="@drawable/bg_menu_card"
-        android:clickable="true"
-        android:focusable="true"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/cardProgress">
-
-        <ImageView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:alpha="0.45"
-            android:scaleType="centerCrop"
-            android:src="@drawable/banner_gymsnearby"
-            android:tag="keep_image" />
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="#22000000" />
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="94dp"
-            android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:paddingStart="18dp"
-            android:paddingTop="14dp"
-            android:paddingEnd="18dp"
-            android:paddingBottom="14dp">
-
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="12dp"
-                android:orientation="vertical">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/gyms_nearby"
-                    android:textColor="#FFFFFF"
-                    android:textSize="18sp"
-                    android:textStyle="bold"
-                    android:tag="keep_text_color" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:text="@string/gyms_nearby_subtitle"
-                    android:textColor="#E5E7EB"
-                    android:textSize="13sp"
-                    android:tag="keep_text_color" />
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/home_kicker" android:textSize="11sp" android:textColor="@color/app_text_primary" android:layout_marginTop="8dp" android:letterSpacing="0.12" android:paddingTop="24dp"/>
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/home_title_new" android:textSize="32sp" android:textColor="@color/app_text_primary" android:layout_marginTop="8dp" android:textStyle="bold"/>
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/home_subtitle_new" android:textSize="16sp" android:textColor="@color/app_text_secondary" android:layout_marginTop="8dp"/>
+        <FrameLayout android:id="@+id/cardWorkouts" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="28dp" android:background="@drawable/bg_home_hero" android:foreground="?attr/selectableItemBackground" android:clickable="true" android:focusable="true">
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:padding="24dp" android:orientation="vertical">
+                <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/workouts" android:textSize="26sp" android:textColor="#FFFFFF" android:layout_marginTop="8dp" android:tag="keep_text_color" android:textStyle="bold"/>
+                <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/home_workout_hint" android:textSize="15sp" android:textColor="#D1E4DF" android:layout_marginTop="8dp" android:tag="keep_text_color"/>
+                <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/home_workout_action" android:textSize="16sp" android:textColor="#C5F277" android:layout_marginTop="8dp" android:tag="keep_text_color" android:paddingTop="24dp" android:paddingBottom="8dp" android:textStyle="bold"/>
+            </LinearLayout>
+        </FrameLayout>
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/home_section" android:textSize="20sp" android:textColor="@color/app_text_primary" android:layout_marginTop="8dp" android:paddingTop="24dp" android:paddingBottom="8dp" android:textStyle="bold"/>
+        <LinearLayout android:id="@+id/cardProgress" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:background="@drawable/bg_home_card" android:foreground="?attr/selectableItemBackground" android:clickable="true" android:focusable="true">
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical" android:padding="20dp">
+                <ImageView android:layout_width="28dp" android:layout_height="28dp" android:src="@drawable/progress_icon" android:tint="@color/app_accent" android:importantForAccessibility="no"/>
+                <LinearLayout android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:orientation="vertical" android:layout_marginStart="16dp">
+                    <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/progress" android:textSize="18sp" android:textColor="@color/app_text_primary" android:layout_marginTop="8dp" android:textStyle="bold"/>
+                    <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/home_detail_0" android:textSize="14sp" android:textColor="@color/app_text_secondary" android:layout_marginTop="8dp"/>
+                </LinearLayout>
             </LinearLayout>
         </LinearLayout>
-    </FrameLayout>
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+        <LinearLayout android:id="@+id/cardNotes" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:background="@drawable/bg_home_card" android:foreground="?attr/selectableItemBackground" android:clickable="true" android:focusable="true">
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical" android:padding="20dp">
+                <ImageView android:layout_width="28dp" android:layout_height="28dp" android:src="@drawable/notes" android:tint="@color/app_accent" android:importantForAccessibility="no"/>
+                <LinearLayout android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:orientation="vertical" android:layout_marginStart="16dp">
+                    <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/notes" android:textSize="18sp" android:textColor="@color/app_text_primary" android:layout_marginTop="8dp" android:textStyle="bold"/>
+                    <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/home_detail_1" android:textSize="14sp" android:textColor="@color/app_text_secondary" android:layout_marginTop="8dp"/>
+                </LinearLayout>
+            </LinearLayout>
+        </LinearLayout>
+        <FrameLayout android:id="@+id/cardGyms" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:background="@drawable/bg_home_card" android:foreground="?attr/selectableItemBackground" android:clickable="true" android:focusable="true">
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical" android:padding="20dp">
+                <ImageView android:layout_width="28dp" android:layout_height="28dp" android:src="@drawable/ic_profile_person" android:tint="@color/app_accent" android:importantForAccessibility="no"/>
+                <LinearLayout android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:orientation="vertical" android:layout_marginStart="16dp">
+                    <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/gyms_nearby" android:textSize="18sp" android:textColor="@color/app_text_primary" android:layout_marginTop="8dp" android:textStyle="bold"/>
+                    <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/home_detail_2" android:textSize="14sp" android:textColor="@color/app_text_secondary" android:layout_marginTop="8dp"/>
+                </LinearLayout>
+            </LinearLayout>
+        </FrameLayout>
+        <LinearLayout android:id="@+id/cardNews" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:background="@drawable/bg_home_card" android:foreground="?attr/selectableItemBackground" android:clickable="true" android:focusable="true">
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical" android:padding="20dp">
+                <ImageView android:layout_width="28dp" android:layout_height="28dp" android:src="@drawable/news" android:tint="@color/app_accent" android:importantForAccessibility="no"/>
+                <LinearLayout android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:orientation="vertical" android:layout_marginStart="16dp">
+                    <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/news" android:textSize="18sp" android:textColor="@color/app_text_primary" android:layout_marginTop="8dp" android:textStyle="bold"/>
+                    <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/home_detail_3" android:textSize="14sp" android:textColor="@color/app_text_secondary" android:layout_marginTop="8dp"/>
+                </LinearLayout>
+            </LinearLayout>
+        </LinearLayout>
+        <LinearLayout android:id="@+id/cardSettings" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:background="@drawable/bg_home_card" android:foreground="?attr/selectableItemBackground" android:clickable="true" android:focusable="true">
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical" android:padding="20dp">
+                <ImageView android:layout_width="28dp" android:layout_height="28dp" android:src="@drawable/settings" android:tint="@color/app_accent" android:importantForAccessibility="no"/>
+                <LinearLayout android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:orientation="vertical" android:layout_marginStart="16dp">
+                    <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/settings" android:textSize="18sp" android:textColor="@color/app_text_primary" android:layout_marginTop="8dp" android:textStyle="bold"/>
+                    <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/home_detail_4" android:textSize="14sp" android:textColor="@color/app_text_secondary" android:layout_marginTop="8dp"/>
+                </LinearLayout>
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+</ScrollView>
