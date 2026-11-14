@@ -9,6 +9,12 @@ import java.util.List;
 @Dao
 public interface CompletedWorkoutDao {
 
+    @Query("SELECT * FROM completed_workouts WHERE user_id = :userId ORDER BY completed_at DESC")
+    androidx.lifecycle.LiveData<List<CompletedWorkoutEntity>> observeHistory(String userId);
+
+    @Query("SELECT COUNT(*) FROM completed_workouts WHERE source_session = :sessionId")
+    int countSession(String sessionId);
+
     @Insert
     long insertCompletedWorkout(CompletedWorkoutEntity completedWorkout);
 

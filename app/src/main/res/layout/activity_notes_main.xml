@@ -20,7 +20,7 @@
         android:layout_marginTop="20dp"
         android:backgroundTint="@color/app_icon_background"
         android:src="@drawable/baseline_arrow_back_24"
-        android:tint="@color/app_accent"
+        app:tint="@color/app_accent"
         app:cornerRadius="10dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -73,7 +73,7 @@
                 android:layout_height="18dp"
                 android:layout_marginTop="8dp"
                 android:src="@drawable/baseline_bar_chart_24"
-                android:tint="@color/app_accent" />
+                app:tint="@color/app_accent" />
 
             <TextView
                 android:id="@+id/textStatsCount"

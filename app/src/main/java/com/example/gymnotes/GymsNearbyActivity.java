@@ -98,6 +98,7 @@ public class GymsNearbyActivity extends AppCompatActivity implements Session.Sea
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_gyms_nearby);
+        MainNavigation.attach(this, 3);
 
         mapView = findViewById(R.id.mapview);
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);

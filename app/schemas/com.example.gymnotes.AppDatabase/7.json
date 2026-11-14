@@ -1,0 +1,294 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 7,
+    "identityHash": "e4e7238639fdf6558efce660cc8cbc6f",
+    "entities": [
+      {
+        "tableName": "workouts",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `title` TEXT, `exerciseCount` INTEGER NOT NULL, `estimatedTime` INTEGER NOT NULL, `restSeconds` INTEGER NOT NULL, `user_id` TEXT, `created_at` INTEGER NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "title",
+            "columnName": "title",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "exerciseCount",
+            "columnName": "exerciseCount",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "estimatedTime",
+            "columnName": "estimatedTime",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "restSeconds",
+            "columnName": "restSeconds",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "userId",
+            "columnName": "user_id",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "created_at",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "ExerciseEntity",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `workoutId` INTEGER NOT NULL, `name` TEXT, `sets` INTEGER NOT NULL, `reps` INTEGER NOT NULL, `weight` REAL NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "workoutId",
+            "columnName": "workoutId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "sets",
+            "columnName": "sets",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "reps",
+            "columnName": "reps",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "weight",
+            "columnName": "weight",
+            "affinity": "REAL",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "completed_workouts",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`source_session` TEXT, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `workout_id` INTEGER NOT NULL, `user_id` TEXT, `title` TEXT, `duration_minutes` INTEGER NOT NULL, `total_weight` REAL NOT NULL, `exercise_count` INTEGER NOT NULL, `completed_at` INTEGER NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "sourceSession",
+            "columnName": "source_session",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "workoutId",
+            "columnName": "workout_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "userId",
+            "columnName": "user_id",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "title",
+            "columnName": "title",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "durationMinutes",
+            "columnName": "duration_minutes",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "totalWeight",
+            "columnName": "total_weight",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "exerciseCount",
+            "columnName": "exercise_count",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "completedAt",
+            "columnName": "completed_at",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_completed_workouts_source_session",
+            "unique": true,
+            "columnNames": [
+              "source_session"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_completed_workouts_source_session` ON `${TABLE_NAME}` (`source_session`)"
+          }
+        ],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "completed_exercises",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `completed_workout_id` INTEGER NOT NULL, `name` TEXT, `sets` INTEGER NOT NULL, `reps` INTEGER NOT NULL, `weight` REAL NOT NULL, `warmup` INTEGER NOT NULL DEFAULT 0)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "completedWorkoutId",
+            "columnName": "completed_workout_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "sets",
+            "columnName": "sets",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "reps",
+            "columnName": "reps",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "weight",
+            "columnName": "weight",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "warmup",
+            "columnName": "warmup",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "session_drafts",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`userId` TEXT NOT NULL, `workoutId` INTEGER NOT NULL, `payload` TEXT NOT NULL, `updatedAt` INTEGER NOT NULL, PRIMARY KEY(`userId`, `workoutId`))",
+        "fields": [
+          {
+            "fieldPath": "userId",
+            "columnName": "userId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "workoutId",
+            "columnName": "workoutId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "payload",
+            "columnName": "payload",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updatedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "userId",
+            "workoutId"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      }
+    ],
+    "views": [],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'e4e7238639fdf6558efce660cc8cbc6f')"
+    ]
+  }
+}

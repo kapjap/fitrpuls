@@ -18,6 +18,9 @@ public class CompletedExerciseEntity {
     private int reps;
     private double weight;
 
+    @ColumnInfo(defaultValue = "0")
+    public boolean warmup;
+
     public CompletedExerciseEntity(int completedWorkoutId, String name, int sets, int reps, double weight) {
         this.completedWorkoutId = completedWorkoutId;
         this.name = name;

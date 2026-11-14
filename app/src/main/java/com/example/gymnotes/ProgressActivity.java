@@ -50,14 +50,11 @@ public class ProgressActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_progress);
+        MainNavigation.attach(this, 2);
 
         initViews();
 
-        appDatabase = Room.databaseBuilder(
-                getApplicationContext(),
-                AppDatabase.class,
-                "fitpulse_database"
-        ).fallbackToDestructiveMigration().build();
+        appDatabase = DatabaseProvider.get(this);
 
         executorService = Executors.newSingleThreadExecutor();
 
@@ -256,7 +253,7 @@ public class ProgressActivity extends AppCompatActivity {
         List<TopExerciseItem> merged = new ArrayList<>();
 
         for (CompletedExerciseEntity exercise : exercises) {
-            if (exercise == null || exercise.getName() == null) {
+            if (exercise == null || exercise.warmup || exercise.getName() == null) {
                 continue;
             }
 
@@ -281,7 +278,7 @@ public class ProgressActivity extends AppCompatActivity {
             }
         }
 
-        merged.sort((a, b) -> Double.compare(b.maxWeight, a.maxWeight));
+        merged.sort((a, b) -> a.name.compareToIgnoreCase(b.name));
 
         int limit = Math.min(3, merged.size());
         for (int i = 0; i < limit; i++) {
@@ -341,7 +338,7 @@ public class ProgressActivity extends AppCompatActivity {
         weightView.setText(formatWeight(item.maxWeight) + " кг");
 
         int progress = maxWeight <= 0 ? 0 : (int) Math.round((item.maxWeight / maxWeight) * 100.0);
-        progressBar.setProgress(progress);
+        progressBar.setVisibility(android.view.View.GONE);
     }
 
     private String formatMinutesShort(int totalMinutes) {

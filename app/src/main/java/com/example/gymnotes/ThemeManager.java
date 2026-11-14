@@ -106,6 +106,9 @@ public class ThemeManager {
     }
 
     public static void applyThemeToActivity(Activity activity) {
+        if (activity instanceof HomeMenuActivity || activity instanceof WorkoutSessionActivity
+                || activity instanceof WorkoutsActivity || activity instanceof ProgressActivity
+                || activity instanceof CreateWorkoutActivity || activity instanceof AddExerciseActivity) return;
         if (!shouldUseLightTheme(activity)) {
             return;
         }

@@ -9,6 +9,9 @@ import java.util.List;
 @Dao
 public interface CompletedExerciseDao {
 
+    @Query("SELECT ce.* FROM completed_exercises ce INNER JOIN completed_workouts cw ON ce.completed_workout_id = cw.id WHERE cw.user_id = :uid ORDER BY cw.completed_at DESC, cw.id DESC, ce.id ASC")
+    androidx.lifecycle.LiveData<List<CompletedExerciseEntity>> observeHistory(String uid);
+
     @Insert
     void insertAll(List<CompletedExerciseEntity> exercises);
 

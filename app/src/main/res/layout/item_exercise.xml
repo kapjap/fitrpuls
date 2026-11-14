@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="10dp"
-    app:cardBackgroundColor="#131313"
+    app:cardBackgroundColor="@color/app_surface"
     app:cardCornerRadius="16dp"
     app:cardElevation="3dp">
 
@@ -19,7 +19,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Жим лёжа"
-            android:textColor="#FFFFFF"
+            android:textColor="@color/app_text_primary"
             android:textSize="16sp"
             android:textStyle="bold"/>
 

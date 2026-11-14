@@ -11,10 +11,13 @@ android {
         applicationId = "com.example.gymnotes"
         minSdk = 24
         targetSdk = 35
-        versionCode = 2
-        versionName = "2.0"
+        versionCode = 3
+        versionName = "2.1-dev"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        javaCompileOptions {
+            annotationProcessorOptions { arguments["room.schemaLocation"] = "$projectDir/schemas" }
+        }
     }
 
     buildTypes {
@@ -26,6 +29,14 @@ android {
             )
         }
     }
+    if (providers.gradleProperty("migrationTests").orNull == "true") {
+        sourceSets.getByName("test").java.srcDir("src/migrationTest/java")
+    }
+
+    testOptions { unitTests.isIncludeAndroidResources = true }
+
+    buildFeatures { viewBinding = true }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
@@ -39,6 +50,9 @@ dependencies {
     implementation(libs.activity)
     implementation(libs.constraintlayout)
     testImplementation(libs.junit)
+    if (providers.gradleProperty("migrationTests").orNull == "true") {
+        testImplementation("org.robolectric:robolectric:4.14.1")
+    }
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
 

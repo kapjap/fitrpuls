@@ -96,7 +96,7 @@ public class News extends AppCompatActivity {
                         + "&apikey=" + API_KEY;
 
                 Log.d("NEWS_PAGE", "Page: " + randomPage);
-                Log.d("NEWS_URL", urlString);
+                // Never log URLs containing API credentials.
 
                 URL url = new URL(urlString);
                 connection = (HttpURLConnection) url.openConnection();

@@ -1,100 +1,69 @@
 package com.example.gymnotes;
 
-import android.animation.ObjectAnimator;
-import android.animation.PropertyValuesHolder;
-import android.animation.ValueAnimator;
 import android.content.Intent;
 import android.os.Bundle;
-import android.widget.FrameLayout;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-
-import androidx.activity.EdgeToEdge;
+import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
-
+import androidx.lifecycle.ViewModelProvider;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import java.text.DateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
 
 public class HomeMenuActivity extends AppCompatActivity {
-
-    private LinearLayout profileContainer;
-    private FirebaseAuth auth;
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
+    @Override protected void onCreate(Bundle state) {
+        super.onCreate(state);
         setContentView(R.layout.activity_home_menu);
-
-        auth = FirebaseAuth.getInstance();
-
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
-
-        FrameLayout cardWorkouts = findViewById(R.id.cardWorkouts);
-        cardWorkouts.setOnClickListener(v -> {
-            Intent intent = new Intent(HomeMenuActivity.this, WorkoutsActivity.class);
-            startActivity(intent);
-        });
-
-        LinearLayout cardNotes = findViewById(R.id.cardNotes);
-        cardNotes.setOnClickListener(v -> {
-            Intent intent = new Intent(HomeMenuActivity.this, NotesMain.class);
-            startActivity(intent);
-        });
-
-        LinearLayout cardNews = findViewById(R.id.cardNews);
-        cardNews.setOnClickListener(v -> {
-            Intent intent = new Intent(HomeMenuActivity.this, News.class);
-            startActivity(intent);
-        });
-
-
-        LinearLayout cardSettings = findViewById(R.id.cardSettings);
-        cardSettings.setOnClickListener(v -> {
-            Intent intent = new Intent(HomeMenuActivity.this, SettingsActivity.class);
-            startActivity(intent);
-        });
-        LinearLayout cardProgress = findViewById(R.id.cardProgress);
-
-        cardProgress.setOnClickListener(v -> {
-            startActivity(new Intent(HomeMenuActivity.this, ProgressActivity.class));
-        });
-        ImageView buttonBack = findViewById(R.id.buttonBack);
-        buttonBack.setOnClickListener(v -> {
-            new androidx.appcompat.app.AlertDialog.Builder(this)
-                    .setTitle(R.string.home_exit_title)
-                    .setMessage(R.string.home_exit_message)
-                    .setNegativeButton(android.R.string.cancel, null)
-                    .setPositiveButton(R.string.logout, (dialog, which) -> {
-                        auth.signOut();
-
-                        Intent intent = new Intent(HomeMenuActivity.this, MainActivity.class);
-                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                        startActivity(intent);
-                        finish();
-                    }).show();
-        });
-        FrameLayout cardGyms = findViewById(R.id.cardGyms);
-
-        cardGyms.setOnClickListener(v -> {
-            Intent intent = new Intent(HomeMenuActivity.this, GymsNearbyActivity.class);
-            startActivity(intent);
-        });
-        profileContainer = findViewById(R.id.profileContainer);
-
-
-        profileContainer.setOnClickListener(v -> {
-
-            Intent intent = new Intent(HomeMenuActivity.this, ProfileActivity.class);
-            startActivity(intent);
+        MainNavigation.attach(this, 0);
+        FirebaseUser user=FirebaseAuth.getInstance().getCurrentUser();
+        if(user==null){startActivity(new Intent(this,MainActivity.class));finish();return;}
+        CharacterPreferences character=new CharacterPreferences(this);
+        String line=character.greeting(System.currentTimeMillis());
+        if(line!=null)((TextView)findViewById(R.id.subtitle)).setText(line);
+        String name=user.getDisplayName();
+        if(name!=null&&!name.trim().isEmpty()) ((TextView)findViewById(R.id.greeting)).setText("С возвращением, "+name.trim());
+        findViewById(R.id.startWorkout).setOnClickListener(v->open(WorkoutsActivity.class));
+        findViewById(R.id.openProgress).setOnClickListener(v->open(ProgressActivity.class));
+        findViewById(R.id.openNotes).setOnClickListener(v->open(NotesMain.class));
+        findViewById(R.id.openNews).setOnClickListener(v->open(News.class));
+        findViewById(R.id.openSettings).setOnClickListener(v->open(SettingsActivity.class));
+        DashboardViewModel model=new ViewModelProvider(this).get(DashboardViewModel.class);
+        model.insight(user.getUid()).observe(this,value->((TextView)findViewById(R.id.explainBody)).setText(value));
+        model.history(user.getUid()).observe(this,history->{
+            long xp=TrainingXp.total(history);int level=TrainingXp.level(xp);
+            TextView xpStatus=findViewById(R.id.xpStatus);
+            xpStatus.setText("Уровень "+level+" · "+xp+" XP · за регулярность, не за вес");
+            if(character.consumeLevelUp(level)) {
+                xpStatus.setText("LEVEL UP · "+level+" — твой ритм становится привычкой");
+                if(android.provider.Settings.Global.getFloat(getContentResolver(),android.provider.Settings.Global.ANIMATOR_DURATION_SCALE,1f)>0){xpStatus.setAlpha(0.3f);xpStatus.animate().alpha(1f).setDuration(450).start();}
+            }
+            Calendar week=Calendar.getInstance();
+            week.set(Calendar.DAY_OF_WEEK,Calendar.MONDAY);week.set(Calendar.HOUR_OF_DAY,0);
+            week.set(Calendar.MINUTE,0);week.set(Calendar.SECOND,0);week.set(Calendar.MILLISECOND,0);
+            if(week.getTimeInMillis()>System.currentTimeMillis())week.add(Calendar.WEEK_OF_YEAR,-1);
+            int count=0,minutes=0;double volume=0;
+            for(CompletedWorkoutEntity w:history)if(w.getCompletedAt()>=week.getTimeInMillis()){
+                count++;minutes+=w.getDurationMinutes();volume+=w.getTotalWeight();
+            }
+            ((TextView)findViewById(R.id.weeklyStats)).setText(count+" тренировок · "+minutes+" мин");
+            ((TextView)findViewById(R.id.weeklyDetail)).setText(String.format(Locale.getDefault(),"Объём: %,.0f кг · сохранено локально",volume));
+            if(history.isEmpty()){
+                ((TextView)findViewById(R.id.lastWorkout)).setText("Здесь начинается твоя история");
+                ((TextView)findViewById(R.id.lastDetail)).setText("Создай тренировку, отметь выполненные подходы и сохрани результат.");
+            }else{
+                CompletedWorkoutEntity last=history.get(0);
+                ((TextView)findViewById(R.id.lastWorkout)).setText(last.getTitle());
+                ((TextView)findViewById(R.id.lastDetail)).setText(DateFormat.getDateInstance().format(new Date(last.getCompletedAt()))+" · "+last.getDurationMinutes()+" мин · "+last.getExerciseCount()+" упражнений");
+            }
         });
     }
-
-
+    @Override protected void onResume() {
+        super.onResume();
+        CharacterPreferences preferences=new CharacterPreferences(this);
+        if(!preferences.humor() || CharacterPreferences.NORMAL.equals(preferences.mode()))
+            ((TextView)findViewById(R.id.subtitle)).setText("Тренируйся. Замечай изменения. Продолжай.");
+    }
+    private void open(Class<?> target){startActivity(new Intent(this,target));}
 }

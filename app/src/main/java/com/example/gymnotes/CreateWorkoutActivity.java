@@ -70,11 +70,7 @@ public class CreateWorkoutActivity extends AppCompatActivity {
         cardAddExercise = findViewById(R.id.cardAddExercise);
         recyclerExercises = findViewById(R.id.recyclerExercises);
 
-        appDatabase = Room.databaseBuilder(
-                getApplicationContext(),
-                AppDatabase.class,
-                "fitpulse_database"
-        ).fallbackToDestructiveMigration().build();
+        appDatabase = DatabaseProvider.get(this);
 
         exerciseList = new ArrayList<>();
         adapter = new ExerciseAdapter(exerciseList);
@@ -165,6 +161,9 @@ public class CreateWorkoutActivity extends AppCompatActivity {
             return;
         }
 
+        if (estimatedTime <= 0 || estimatedTime > 1440) {
+            editWorkoutTime.setError("Введите от 1 до 1440 минут"); return;
+        }
         if (restSeconds <= 0) {
             editWorkoutRest.setError("Отдых должен быть больше 0");
             return;
@@ -181,27 +180,19 @@ public class CreateWorkoutActivity extends AppCompatActivity {
         int finalEstimatedTime = estimatedTime;
         int finalRestSeconds = restSeconds;
 
-        new Thread(() -> {
-            long workoutId = appDatabase.workoutDao().insertWorkout(
-                    new WorkoutEntity(
-                            title,
-                            exerciseList.size(),
-                            finalEstimatedTime,
-                            finalRestSeconds,
-                            uid
-                    )
-            );
-
-            for (ExerciseEntity ex : exerciseList) {
-                ex.workoutId = (int) workoutId;
-                appDatabase.exerciseDao().insert(ex);
+        buttonSaveWorkout.setEnabled(false);
+        ArrayList<ExerciseEntity> snapshot = new ArrayList<>(exerciseList);
+        SessionRepository.IO.execute(() -> {
+            try {
+                appDatabase.runInTransaction(() -> {
+                    long id=appDatabase.workoutDao().insertWorkout(new WorkoutEntity(title,snapshot.size(),finalEstimatedTime,finalRestSeconds,uid));
+                    for(ExerciseEntity ex:snapshot){ex.workoutId=(int)id;appDatabase.exerciseDao().insert(ex);}
+                });
+                runOnUiThread(() -> {Toast.makeText(this,"Тренировка сохранена",Toast.LENGTH_SHORT).show();finish();});
+            } catch(Exception e) {
+                runOnUiThread(() -> {buttonSaveWorkout.setEnabled(true);Toast.makeText(this,"Не удалось сохранить. Попробуйте ещё раз.",Toast.LENGTH_LONG).show();});
             }
-
-            runOnUiThread(() -> {
-                Toast.makeText(CreateWorkoutActivity.this, "Тренировка сохранена 💪", Toast.LENGTH_SHORT).show();
-                finish();
-            });
-        }).start();
+        });
     }
 
     private String getUserKey(String baseKey) {

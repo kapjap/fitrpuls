@@ -1,14 +1,13 @@
-<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
-    <color name="primary">#2563EB</color>
-
-    <color name="app_background">#F4F7FB</color>
-    <color name="app_surface">#FFFFFF</color>
-    <color name="app_surface_alt">#EAF1FB</color>
-    <color name="app_text_primary">#111827</color>
-    <color name="app_text_secondary">#667085</color>
-    <color name="app_icon_background">#E6EEF8</color>
-    <color name="app_accent">#2563EB</color>
+  <color name="black">#FF000000</color>
+  <color name="white">#FFFFFFFF</color>
+  <color name="primary">#396515</color>
+  <color name="app_background">#F4F6F2</color>
+  <color name="app_surface">#FFFFFF</color>
+  <color name="app_surface_alt">#E8EDE4</color>
+  <color name="app_text_primary">#172019</color>
+  <color name="app_text_secondary">#52604F</color>
+  <color name="app_icon_background">#E6EDDE</color>
+  <color name="app_accent">#396515</color>
+  <color name="app_on_accent">#FFFFFF</color>
 </resources>

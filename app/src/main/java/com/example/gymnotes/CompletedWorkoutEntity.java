@@ -4,8 +4,11 @@ import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
-@Entity(tableName = "completed_workouts")
+@Entity(tableName = "completed_workouts", indices = {@androidx.room.Index(value = "source_session", unique = true)})
 public class CompletedWorkoutEntity {
+
+    @ColumnInfo(name = "source_session")
+    public String sourceSession;
 
     @PrimaryKey(autoGenerate = true)
     private int id;

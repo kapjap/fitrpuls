@@ -80,17 +80,14 @@ public class ProfileActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile);
+        MainNavigation.attach(this, 4);
 
         auth = FirebaseAuth.getInstance();
         preferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
 
         initViews();
 
-        db = Room.databaseBuilder(
-                getApplicationContext(),
-                AppDatabase.class,
-                "fitpulse_database"
-        ).fallbackToDestructiveMigration().build();
+        db = DatabaseProvider.get(this);
 
         loadUserInfo();
         loadSavedAvatar();
@@ -490,8 +487,13 @@ public class ProfileActivity extends AppCompatActivity {
         user.delete()
                 .addOnSuccessListener(unused -> executor.execute(() -> {
                     try {
-                        db.exerciseDao().deleteByUserId(uid);
-                        db.workoutDao().deleteAllWorkoutsByUser(uid);
+                        db.runInTransaction(() -> {
+                            db.sessionDraftDao().deleteByUser(uid);
+                            db.completedExerciseDao().deleteByUserId(uid);
+                            db.completedWorkoutDao().deleteByUserId(uid);
+                            db.exerciseDao().deleteByUserId(uid);
+                            db.workoutDao().deleteAllWorkoutsByUser(uid);
+                        });
                     } catch (Exception e) {
                         e.printStackTrace();
                     }

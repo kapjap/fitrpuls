@@ -56,9 +56,15 @@ public class WorkoutSessionActivity extends AppCompatActivity {
     private TextView buttonFinishWorkout;
 
     private WorkoutProgressAdapter adapter;
-    private ArrayList<WorkoutProgressModel> exerciseList;
+    private ArrayList<SessionSnapshot.Entry> exerciseList;
 
     private AppDatabase appDatabase;
+    private SessionRepository repository;
+    private SessionSnapshot session;
+    private String sessionUid;
+    private boolean loaded;
+    private long lastTick;
+
 
     private int workoutId;
     private String workoutTitle;
@@ -81,11 +87,14 @@ public class WorkoutSessionActivity extends AppCompatActivity {
     private final Runnable timerRunnable = new Runnable() {
         @Override
         public void run() {
-            if (!isPaused) {
-                workoutSeconds++;
+            if (loaded && !isPaused) {
+                long now = android.os.SystemClock.elapsedRealtime();
+                int elapsed = (int) ((now - lastTick) / 1000);
+                workoutSeconds += elapsed;
+                lastTick += elapsed * 1000L;
 
                 if (isRestRunning && restSeconds > 0) {
-                    restSeconds--;
+                    restSeconds = Math.max(0, restSeconds - elapsed);
 
                     if (restSeconds <= 0) {
                         restSeconds = 0;
@@ -103,6 +112,8 @@ public class WorkoutSessionActivity extends AppCompatActivity {
                 updateRestButtons();
             }
 
+            if (isPaused) lastTick = android.os.SystemClock.elapsedRealtime();
+            if (loaded && workoutSeconds % 10 == 0) persistSession();
             handler.postDelayed(this, 1000);
         }
     };
@@ -137,12 +148,13 @@ public class WorkoutSessionActivity extends AppCompatActivity {
         buttonSkipRest = findViewById(R.id.buttonSkipRest);
         buttonFinishWorkout = findViewById(R.id.buttonFinishWorkout);
 
-        appDatabase = Room.databaseBuilder(
-                getApplicationContext(),
-                AppDatabase.class,
-                "fitpulse_database"
-        ).fallbackToDestructiveMigration().build();
+        appDatabase = DatabaseProvider.get(this);
 
+        repository = new SessionRepository(appDatabase);
+        FirebaseUser owner = FirebaseAuth.getInstance().getCurrentUser();
+        if (owner == null) { finish(); return; }
+        sessionUid = owner.getUid();
+        buttonFinishWorkout.setEnabled(false);
         workoutId = getIntent().getIntExtra("workout_id", -1);
         workoutTitle = getIntent().getStringExtra("workout_title");
 
@@ -157,24 +169,14 @@ public class WorkoutSessionActivity extends AppCompatActivity {
 
         exerciseList = new ArrayList<>();
         adapter = new WorkoutProgressAdapter(exerciseList, (position, setIndex) -> {
-            WorkoutProgressModel item = exerciseList.get(position);
-            int oldCompletedSets = item.getCompletedSets();
-
-            int newCompletedSets;
-            if (oldCompletedSets == setIndex + 1) {
-                newCompletedSets = setIndex;
-            } else {
-                newCompletedSets = setIndex + 1;
-            }
-
-            item.setCompletedSets(newCompletedSets);
+            if (!loaded || isFinishingWorkout) return;
+            SessionSnapshot.Entry item = exerciseList.get(position);
+            if(setIndex < 0) { persistSession(); return; }
+            SessionSnapshot.SetEntry set=item.sets.get(setIndex);
+            set.done=!set.done;
             adapter.notifyItemChanged(position);
-
-            boolean setWasMarkedCompleted = newCompletedSets > oldCompletedSets;
-
-            if (setWasMarkedCompleted && autoRestEnabled && !isPaused) {
-                startRestAutomatically();
-            }
+            if(set.done && autoRestEnabled && !isPaused) startRestAutomatically();
+            persistSession();
         });
 
         recyclerWorkoutExercises.setLayoutManager(new LinearLayoutManager(this));
@@ -185,12 +187,15 @@ public class WorkoutSessionActivity extends AppCompatActivity {
 
         updateTimers();
         updateRestButtons();
+        lastTick = android.os.SystemClock.elapsedRealtime();
         handler.post(timerRunnable);
 
         buttonBack.setOnClickListener(v -> finish());
 
         buttonPause.setOnClickListener(v -> {
             isPaused = !isPaused;
+            lastTick = android.os.SystemClock.elapsedRealtime();
+            persistSession();
 
             if (isPaused) {
                 buttonPause.setImageResource(R.drawable.baseline_play_arrow_24);
@@ -226,85 +231,65 @@ public class WorkoutSessionActivity extends AppCompatActivity {
             isRestRunning = false;
             updateTimers();
             updateRestButtons();
+            persistSession();
             Toast.makeText(this, "Отдых пропущен", Toast.LENGTH_SHORT).show();
         });
 
         buttonFinishWorkout.setOnClickListener(v -> finishWorkoutAndSave());
     }
 
+    private SessionSnapshot captureSession() {
+        session.seconds = workoutSeconds;
+        session.restSeconds = restSeconds;
+        session.paused = isPaused;
+        session.savedAt = System.currentTimeMillis();
+        return new com.google.gson.Gson().fromJson(new com.google.gson.Gson().toJson(session), SessionSnapshot.class);
+    }
+
+    private void persistSession() {
+        if (!loaded || isFinishingWorkout) return;
+        SessionSnapshot snapshot = captureSession();
+        SessionRepository.IO.execute(() -> {
+            try { repository.save(sessionUid, workoutId, snapshot); }
+            catch (Exception e) { runOnUiThread(() -> {
+                if (!isDestroyed()) Toast.makeText(this, "Не удалось сохранить тренировку. Проверьте свободное место.", Toast.LENGTH_LONG).show();
+            }); }
+        });
+    }
+
     private void finishWorkoutAndSave() {
-        if (isFinishingWorkout) {
+        if (!loaded || isFinishingWorkout) return;
+        if (session.completedExercises() == 0) {
+            Toast.makeText(this, "Отметьте хотя бы один выполненный подход", Toast.LENGTH_SHORT).show();
             return;
         }
+        new androidx.appcompat.app.AlertDialog.Builder(this)
+                .setTitle("Завершить тренировку?")
+                .setMessage("В историю попадут только отмеченные подходы.")
+                .setNegativeButton(android.R.string.cancel, null)
+                .setPositiveButton("Сохранить", (dialog, which) -> saveCompletedSession()).show();
+    }
 
-        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
-        if (currentUser == null) {
-            Toast.makeText(this, "Пользователь не найден", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
+    private void saveCompletedSession() {
+        if (isFinishingWorkout) return;
         isFinishingWorkout = true;
         buttonFinishWorkout.setEnabled(false);
-        buttonFinishWorkout.setAlpha(0.6f);
-
-        new Thread(() -> {
+        SessionSnapshot snapshot = captureSession();
+        SessionRepository.IO.execute(() -> {
             try {
-                List<ExerciseEntity> exercises = appDatabase.exerciseDao().getExercisesByWorkout(workoutId);
-
-                if (exercises == null) {
-                    exercises = new ArrayList<>();
-                }
-
-                double totalWeight = 0;
-                for (ExerciseEntity ex : exercises) {
-                    totalWeight += ex.weight * ex.reps * ex.sets;
-                }
-
-                int completedMinutes = Math.max(1, (workoutSeconds + 59) / 60);
-
-                CompletedWorkoutEntity completedWorkout = new CompletedWorkoutEntity(
-                        workoutId,
-                        currentUser.getUid(),
-                        workoutTitle,
-                        completedMinutes,
-                        totalWeight,
-                        exercises.size(),
-                        System.currentTimeMillis()
-                );
-
-                long completedWorkoutId = appDatabase.completedWorkoutDao()
-                        .insertCompletedWorkout(completedWorkout);
-
-                List<CompletedExerciseEntity> completedExercises = new ArrayList<>();
-                for (ExerciseEntity ex : exercises) {
-                    completedExercises.add(new CompletedExerciseEntity(
-                            (int) completedWorkoutId,
-                            ex.name,
-                            ex.sets,
-                            ex.reps,
-                            ex.weight
-                    ));
-                }
-
-                if (!completedExercises.isEmpty()) {
-                    appDatabase.completedExerciseDao().insertAll(completedExercises);
-                }
-
-                runOnUiThread(() -> {
-                    Toast.makeText(this, "Тренировка завершена", Toast.LENGTH_SHORT).show();
+                repository.finish(sessionUid, workoutId, snapshot);
+                runOnUiThread(() -> { if (!isDestroyed()) {
+                    Toast.makeText(this, "Тренировка сохранена на устройстве", Toast.LENGTH_SHORT).show();
                     finish();
-                });
-
+                }});
             } catch (Exception e) {
-                e.printStackTrace();
                 runOnUiThread(() -> {
                     isFinishingWorkout = false;
                     buttonFinishWorkout.setEnabled(true);
-                    buttonFinishWorkout.setAlpha(1f);
-                    Toast.makeText(this, "Ошибка сохранения завершённой тренировки", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Не удалось завершить. Тренировка остаётся открытой; попробуйте ещё раз.", Toast.LENGTH_LONG).show();
                 });
             }
-        }).start();
+        });
     }
 
     private void loadUserSettings() {
@@ -358,6 +343,7 @@ public class WorkoutSessionActivity extends AppCompatActivity {
         isRestRunning = true;
         updateTimers();
         updateRestButtons();
+        persistSession();
     }
 
     private void onRestFinished() {
@@ -424,31 +410,41 @@ public class WorkoutSessionActivity extends AppCompatActivity {
     }
 
     private void loadExercises() {
-        new Thread(() -> {
-            List<ExerciseEntity> exercises = appDatabase.exerciseDao().getExercisesByWorkout(workoutId);
-            ArrayList<WorkoutProgressModel> loadedList = new ArrayList<>();
-
-            for (ExerciseEntity ex : exercises) {
-                String info = ex.sets + " подхода × " + ex.reps + " повторений";
-                loadedList.add(new WorkoutProgressModel(
-                        ex.id,
-                        ex.name,
-                        info,
-                        0,
-                        ex.sets
-                ));
+        SessionRepository.IO.execute(() -> {
+            try {
+                SessionSnapshot restored = repository.load(sessionUid, workoutId);
+                runOnUiThread(() -> {
+                    if (isDestroyed() || isFinishing()) return;
+                    session = restored;
+                    workoutSeconds = session.seconds;
+                    restSeconds = session.restSeconds;
+                    isPaused = session.paused;
+                    if (!isPaused && session.savedAt > 0) {
+                        int away = (int) Math.min(Integer.MAX_VALUE / 2, Math.max(0, (System.currentTimeMillis() - session.savedAt) / 1000));
+                        workoutSeconds += away;
+                        restSeconds = Math.max(0, restSeconds - away);
+                    }
+                    isRestRunning = restSeconds > 0;
+                    textWorkoutTitle.setText(session.title);
+                    exerciseList.clear();
+                    exerciseList.addAll(session.entries);
+                    loaded = true;
+                    lastTick = android.os.SystemClock.elapsedRealtime();
+                    buttonPause.setImageResource(isPaused ? R.drawable.baseline_play_arrow_24 : R.drawable.baseline_pause_24);
+                    buttonFinishWorkout.setEnabled(true);
+                    adapter.notifyDataSetChanged();
+                    updateTimers();
+                    if (exerciseList.isEmpty()) Toast.makeText(this, "Добавьте упражнения в тренировку", Toast.LENGTH_LONG).show();
+                });
+            } catch (Exception e) {
+                runOnUiThread(() -> {
+                    if (!isDestroyed()) new androidx.appcompat.app.AlertDialog.Builder(this)
+                            .setTitle("Тренировка недоступна")
+                            .setMessage("Не удалось прочитать данные. Они не удалены. Вернитесь и попробуйте снова.")
+                            .setPositiveButton(android.R.string.ok, (d, w) -> finish()).show();
+                });
             }
-
-            runOnUiThread(() -> {
-                exerciseList.clear();
-                exerciseList.addAll(loadedList);
-                adapter.notifyDataSetChanged();
-
-                if (exerciseList.isEmpty()) {
-                    Toast.makeText(this, "В этой тренировке пока нет упражнений", Toast.LENGTH_SHORT).show();
-                }
-            });
-        }).start();
+        });
     }
 
     private void updateTimers() {
@@ -482,6 +478,7 @@ public class WorkoutSessionActivity extends AppCompatActivity {
 
     @Override
     protected void onPause() {
+        persistSession();
         super.onPause();
         if (rootView != null) {
             rootView.setKeepScreenOn(false);

@@ -91,6 +91,7 @@ public class SettingsActivity extends AppCompatActivity {
 
         preferences = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
 
+        findViewById(R.id.characterSettings).setOnClickListener(v -> CharacterSettings.show(this));
         initViews();
         loadSettings();
         setupListeners();

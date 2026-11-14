@@ -39,6 +39,7 @@ public class WorkoutsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_workouts);
+        MainNavigation.attach(this, 1);
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
@@ -84,11 +85,7 @@ public class WorkoutsActivity extends AppCompatActivity {
 
         recyclerWorkouts.setAdapter(workoutAdapter);
 
-        appDatabase = Room.databaseBuilder(
-                getApplicationContext(),
-                AppDatabase.class,
-                "fitpulse_database"
-        ).fallbackToDestructiveMigration().build();
+        appDatabase = DatabaseProvider.get(this);
 
         buttonBack.setOnClickListener(v -> finish());
 
@@ -98,7 +95,7 @@ public class WorkoutsActivity extends AppCompatActivity {
         });
 
         bannerCard.setOnClickListener(v ->
-                Toast.makeText(this, "Готов к тренировке 💪", Toast.LENGTH_SHORT).show()
+                startActivity(new Intent(this, CreateWorkoutActivity.class))
         );
 
         loadWorkouts();
@@ -137,8 +134,14 @@ public class WorkoutsActivity extends AppCompatActivity {
 
     private void deleteWorkout(WorkoutEntity workout) {
         new Thread(() -> {
-            appDatabase.exerciseDao().deleteByWorkout(workout.getId());
-            appDatabase.workoutDao().deleteWorkout(workout);
+            if (appDatabase.sessionDraftDao().get(workout.getUserId(),workout.getId()) != null) {
+                runOnUiThread(() -> Toast.makeText(this,"Сначала завершите сохранённую тренировку",Toast.LENGTH_LONG).show());
+                return;
+            }
+            appDatabase.runInTransaction(() -> {
+                appDatabase.exerciseDao().deleteByWorkout(workout.getId());
+                appDatabase.workoutDao().deleteWorkout(workout);
+            });
 
             runOnUiThread(() -> {
                 Toast.makeText(

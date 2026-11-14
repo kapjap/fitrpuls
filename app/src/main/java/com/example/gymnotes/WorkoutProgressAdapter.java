@@ -1,97 +1,71 @@
 package com.example.gymnotes;
 
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.TextView;
-
+import android.view.*;
+import android.widget.*;
+import android.text.InputType;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.recyclerview.widget.RecyclerView;
-
+import com.google.android.material.button.MaterialButton;
 import java.util.List;
 
-public class WorkoutProgressAdapter extends RecyclerView.Adapter<WorkoutProgressAdapter.ProgressViewHolder> {
-
-    public interface OnSetClickListener {
-        void onSetClicked(int position, int setIndex);
-    }
-
-    private final List<WorkoutProgressModel> items;
+public class WorkoutProgressAdapter extends RecyclerView.Adapter<WorkoutProgressAdapter.Holder> {
+    public interface OnSetClickListener { void onSetClicked(int position, int setIndex); }
+    private final List<SessionSnapshot.Entry> items;
     private final OnSetClickListener listener;
-
-    public WorkoutProgressAdapter(List<WorkoutProgressModel> items, OnSetClickListener listener) {
-        this.items = items;
-        this.listener = listener;
+    public WorkoutProgressAdapter(List<SessionSnapshot.Entry> items, OnSetClickListener listener) { this.items=items; this.listener=listener; }
+    @NonNull @Override public Holder onCreateViewHolder(@NonNull ViewGroup parent,int type) {
+        return new Holder(LayoutInflater.from(parent.getContext()).inflate(R.layout.item_workout_progress,parent,false));
     }
-
-    @NonNull
-    @Override
-    public ProgressViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_workout_progress, parent, false);
-        return new ProgressViewHolder(view);
-    }
-
-    @Override
-    public void onBindViewHolder(@NonNull ProgressViewHolder holder, int position) {
-        WorkoutProgressModel item = items.get(position);
-
-        holder.textExerciseName.setText(item.getName());
-        holder.textExerciseInfo.setText(item.getInfo());
-
-        ImageView[] checks = {
-                holder.check1,
-                holder.check2,
-                holder.check3,
-                holder.check4,
-                holder.check5
-        };
-
-        for (int i = 0; i < checks.length; i++) {
-            final int setIndex = i;
-
-            if (i < item.getTotalSets()) {
-                checks[i].setVisibility(View.VISIBLE);
-
-                if (i < item.getCompletedSets()) {
-                    checks[i].setImageResource(R.drawable.bg_set_done);
-                } else {
-                    checks[i].setImageResource(R.drawable.bg_set_empty);
-                }
-
-                checks[i].setOnClickListener(v -> {
-                    if (listener != null) {
-                        listener.onSetClicked(position, setIndex);
-                    }
-                });
-            } else {
-                checks[i].setVisibility(View.GONE);
-                checks[i].setOnClickListener(null);
-            }
+    @Override public void onBindViewHolder(@NonNull Holder h,int position) {
+        SessionSnapshot.Entry item=items.get(position);
+        h.name.setText(item.name); h.info.setText("Выполнено "+item.doneCount()+" из "+item.sets.size()+" · нажмите вес для изменения");
+        h.buttons.removeAllViews();
+        for(int i=0;i<item.sets.size();i++) {
+            final int index=i; SessionSnapshot.SetEntry set=item.sets.get(i);
+            LinearLayout row=new LinearLayout(h.itemView.getContext());row.setGravity(Gravity.CENTER_VERTICAL);
+            CheckBox check=new CheckBox(h.itemView.getContext());check.setText(""+(i+1));check.setChecked(set.done);
+            check.setMinHeight(dp(h.itemView,48));
+            check.setContentDescription("Подход "+(i+1)+(set.done?", выполнен":", не выполнен"));
+            check.setOnClickListener(v->{int pos=h.getBindingAdapterPosition();if(pos!=RecyclerView.NO_POSITION)listener.onSetClicked(pos,index);});
+            row.addView(check);
+            MaterialButton edit=new MaterialButton(h.itemView.getContext(),null,com.google.android.material.R.attr.materialButtonOutlinedStyle);
+            edit.setText(set.weight+" кг × "+set.reps+(set.warmup?" · разминка":""));
+            edit.setOnClickListener(v->editSet(h,index));
+            row.addView(edit,new LinearLayout.LayoutParams(0,-2,1));h.buttons.addView(row);
         }
+        MaterialButton add=new MaterialButton(h.itemView.getContext(),null,com.google.android.material.R.attr.materialButtonOutlinedStyle);
+        add.setText("+ Подход"); add.setOnClickListener(v->{
+            int pos=h.getBindingAdapterPosition();if(pos==RecyclerView.NO_POSITION)return;
+            SessionSnapshot.Entry e=items.get(pos); SessionSnapshot.SetEntry set=new SessionSnapshot.SetEntry();
+            if(!e.sets.isEmpty()){SessionSnapshot.SetEntry last=e.sets.get(e.sets.size()-1);set.weight=last.weight;set.reps=last.reps;}
+            e.sets.add(set);listener.onSetClicked(pos,-1);notifyItemChanged(pos);
+        });h.buttons.addView(add);
     }
-
-    @Override
-    public int getItemCount() {
-        return items.size();
+    private void editSet(Holder h,int index) {
+        int pos=h.getBindingAdapterPosition();if(pos==RecyclerView.NO_POSITION)return;
+        SessionSnapshot.SetEntry set=items.get(pos).sets.get(index);
+        LinearLayout fields=new LinearLayout(h.itemView.getContext());fields.setOrientation(LinearLayout.VERTICAL);fields.setPadding(32,16,32,16);
+        EditText weight=new EditText(fields.getContext());weight.setHint("Вес, кг");weight.setInputType(InputType.TYPE_CLASS_NUMBER|InputType.TYPE_NUMBER_FLAG_DECIMAL);weight.setText(String.valueOf(set.weight));
+        EditText reps=new EditText(fields.getContext());reps.setHint("Повторения");reps.setInputType(InputType.TYPE_CLASS_NUMBER);reps.setText(String.valueOf(set.reps));
+        CheckBox warmup=new CheckBox(fields.getContext());warmup.setText("Разминочный подход");warmup.setChecked(set.warmup);
+        fields.addView(weight);fields.addView(reps);fields.addView(warmup);
+        AlertDialog dialog=new AlertDialog.Builder(fields.getContext()).setTitle("Подход "+(index+1)).setView(fields)
+                .setNegativeButton(android.R.string.cancel,null).setPositiveButton("Сохранить",null).create();
+        dialog.setOnShowListener(d->dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v->{
+            try {
+                double w=Double.parseDouble(weight.getText().toString().replace(',','.'));int n=Integer.parseInt(reps.getText().toString());
+                if(!Double.isFinite(w)||w<0||w>10000){weight.setError("Введите вес от 0 до 10000 кг");return;}
+                if(n<1||n>10000){reps.setError("Введите от 1 до 10000 повторений");return;}
+                int current=h.getBindingAdapterPosition();if(current==RecyclerView.NO_POSITION){dialog.dismiss();return;}
+                set.weight=w;set.reps=n;set.warmup=warmup.isChecked();listener.onSetClicked(current,-1);notifyItemChanged(current);dialog.dismiss();
+            }catch(NumberFormatException e){reps.setError("Проверьте вес и повторения");}
+        }));dialog.show();
     }
-
-    static class ProgressViewHolder extends RecyclerView.ViewHolder {
-
-        TextView textExerciseName, textExerciseInfo;
-        ImageView check1, check2, check3, check4, check5;
-
-        public ProgressViewHolder(@NonNull View itemView) {
-            super(itemView);
-
-            textExerciseName = itemView.findViewById(R.id.textExerciseName);
-            textExerciseInfo = itemView.findViewById(R.id.textExerciseInfo);
-            check1 = itemView.findViewById(R.id.check1);
-            check2 = itemView.findViewById(R.id.check2);
-            check3 = itemView.findViewById(R.id.check3);
-            check4 = itemView.findViewById(R.id.check4);
-            check5 = itemView.findViewById(R.id.check5);
-        }
+    private int dp(View v,int value){return (int)(v.getResources().getDisplayMetrics().density*value);}
+    @Override public int getItemCount(){return items.size();}
+    static class Holder extends RecyclerView.ViewHolder {
+        TextView name,info; LinearLayout buttons;
+        Holder(View v){super(v);name=v.findViewById(R.id.textExerciseName);info=v.findViewById(R.id.textExerciseInfo);buttons=v.findViewById(R.id.setButtons);}
     }
 }
