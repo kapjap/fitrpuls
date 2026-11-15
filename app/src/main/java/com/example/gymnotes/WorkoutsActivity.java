@@ -2,155 +2,106 @@ package com.example.gymnotes;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.widget.ImageView;
+import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
-
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.cardview.widget.CardView;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.room.Room;
-
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
+/** Plans and unfinished sessions, without changing their stored data. */
 public class WorkoutsActivity extends AppCompatActivity {
+    private WorkoutAdapter adapter;
+    private AppDatabase database;
+    private int requestVersion;
 
-    private RecyclerView recyclerWorkouts;
-    private ImageView buttonBack;
-    private ImageView buttonAddWorkout;
-    private CardView bannerCard;
-
-    private WorkoutAdapter workoutAdapter;
-    private ArrayList<WorkoutEntity> workoutList;
-
-    private AppDatabase appDatabase;
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
+    @Override protected void onCreate(Bundle state) {
+        super.onCreate(state);
         setContentView(R.layout.activity_workouts);
-        MainNavigation.attach(this, 1);
-
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(
-                    v.getPaddingLeft(),
-                    systemBars.top,
-                    v.getPaddingRight(),
-                    systemBars.bottom
-            );
-            return insets;
+        MainNavigation.attach(this,1);
+        database=DatabaseProvider.get(this);
+        RecyclerView list=findViewById(R.id.recyclerWorkouts);
+        list.setLayoutManager(new LinearLayoutManager(this));
+        adapter=new WorkoutAdapter(new ArrayList<>(),new WorkoutAdapter.OnWorkoutClickListener(){
+            @Override public void onStartClick(WorkoutEntity workout){
+                startActivity(new Intent(WorkoutsActivity.this,WorkoutSessionActivity.class)
+                        .putExtra("workout_id",workout.getId()).putExtra("workout_title",workout.getTitle())
+                        .putExtra("workout_time",workout.getEstimatedTime()));
+            }
+            @Override public void onItemClick(WorkoutEntity workout){onStartClick(workout);}
+            @Override public void onItemLongClick(WorkoutEntity workout){confirmDelete(workout);}
         });
+        list.setAdapter(adapter);
+        findViewById(R.id.buttonAddWorkout).setOnClickListener(v->createWorkout());
+    }
 
-        recyclerWorkouts = findViewById(R.id.recyclerWorkouts);
-        buttonBack = findViewById(R.id.buttonBack);
-        buttonAddWorkout = findViewById(R.id.buttonAddWorkout);
-        bannerCard = findViewById(R.id.bannerCard);
+    @Override protected void onResume(){super.onResume();loadWorkouts();}
+    private void createWorkout(){startActivity(new Intent(this,CreateWorkoutActivity.class));}
 
-        recyclerWorkouts.setLayoutManager(new LinearLayoutManager(this));
-
-        workoutList = new ArrayList<>();
-        workoutAdapter = new WorkoutAdapter(workoutList, new WorkoutAdapter.OnWorkoutClickListener() {
-            @Override
-            public void onStartClick(WorkoutEntity workout) {
-                Intent intent = new Intent(WorkoutsActivity.this, WorkoutSessionActivity.class);
-                intent.putExtra("workout_id", workout.getId());
-                intent.putExtra("workout_title", workout.getTitle());
-                intent.putExtra("workout_time", workout.getEstimatedTime());
-                startActivity(intent);
-            }
-
-            @Override
-            public void onItemClick(WorkoutEntity workout) {
-                Toast.makeText(WorkoutsActivity.this,
-                        workout.getTitle(),
-                        Toast.LENGTH_SHORT).show();
-            }
-
-            @Override
-            public void onItemLongClick(WorkoutEntity workout) {
-                showDeleteDialog(workout);
-            }
+    private void loadWorkouts(){
+        FirebaseUser user=FirebaseAuth.getInstance().getCurrentUser();
+        if(user==null){startActivity(new Intent(this,MainActivity.class));finish();return;}
+        String uid=user.getUid();int version=++requestVersion;
+        showState(R.string.ag_loading,0,0,null);
+        SessionRepository.IO.execute(()->{
+            try {
+                List<WorkoutEntity> workouts=database.workoutDao().getAllWorkoutsByUser(uid);
+                Set<Integer> drafts=new HashSet<>(database.sessionDraftDao().getWorkoutIds(uid));
+                workouts.sort((a,b)->Boolean.compare(drafts.contains(b.getId()),drafts.contains(a.getId())));
+                runOnUiThread(()->{
+                    if(isDestroyed()||version!=requestVersion)return;
+                    adapter.setDraftIds(drafts);adapter.updateList(new ArrayList<>(workouts));
+                    ((TextView)findViewById(R.id.workoutCount)).setText(getString(R.string.ag_count,workouts.size()));
+                    findViewById(R.id.recyclerWorkouts).setVisibility(workouts.isEmpty()?View.GONE:View.VISIBLE);
+                    if(workouts.isEmpty())showState(R.string.ag_empty,R.string.ag_empty_body,R.string.ag_new,this::createWorkout);
+                    else findViewById(R.id.workoutState).setVisibility(View.GONE);
+                });
+            }catch(Exception e){runOnUiThread(()->{
+                if(!isDestroyed()&&version==requestVersion)showState(R.string.ag_error,R.string.ag_error_body,R.string.ag_retry,this::loadWorkouts);
+            });}
         });
+    }
 
-        recyclerWorkouts.setAdapter(workoutAdapter);
+    private void showState(int title,int body,int action,Runnable callback){
+        findViewById(R.id.workoutState).setVisibility(View.VISIBLE);
+        findViewById(R.id.recyclerWorkouts).setVisibility(View.GONE);
+        ((TextView)findViewById(R.id.stateTitle)).setText(title);
+        TextView detail=findViewById(R.id.stateBody);
+        detail.setVisibility(body==0?View.GONE:View.VISIBLE);if(body!=0)detail.setText(body);
+        TextView button=findViewById(R.id.stateAction);
+        button.setVisibility(action==0?View.GONE:View.VISIBLE);
+        if(action!=0){button.setText(action);button.setOnClickListener(v->callback.run());}
+    }
 
-        appDatabase = DatabaseProvider.get(this);
+    private void confirmDelete(WorkoutEntity workout){
+        new AlertDialog.Builder(this).setTitle("Удаление тренировки")
+                .setMessage("Удалить план «"+workout.getTitle()+"»? История выполненных тренировок сохранится.")
+                .setNegativeButton(android.R.string.cancel,null)
+                .setPositiveButton("Удалить",(dialog,which)->deleteWorkout(workout)).show();
+    }
 
-        buttonBack.setOnClickListener(v -> finish());
-
-        buttonAddWorkout.setOnClickListener(v -> {
-            Intent intent = new Intent(WorkoutsActivity.this, CreateWorkoutActivity.class);
-            startActivity(intent);
+    private void deleteWorkout(WorkoutEntity workout){
+        FirebaseUser user=FirebaseAuth.getInstance().getCurrentUser();
+        if(user==null||!user.getUid().equals(workout.getUserId()))return;
+        SessionRepository.IO.execute(()->{
+            try {
+                // Use the same ordered queue as session saves so a pending draft is visible.
+                if(database.sessionDraftDao().get(user.getUid(),workout.getId())!=null){
+                    runOnUiThread(()->Toast.makeText(this,"Сначала завершите сохранённую тренировку",Toast.LENGTH_LONG).show());return;
+                }
+                database.runInTransaction(()->{
+                    database.exerciseDao().deleteByWorkout(workout.getId());
+                    database.workoutDao().deleteWorkout(workout);
+                });
+                runOnUiThread(()->{if(!isDestroyed()){Toast.makeText(this,R.string.ag_workout_removed,Toast.LENGTH_SHORT).show();loadWorkouts();}});
+            }catch(Exception e){runOnUiThread(()->{if(!isDestroyed())Toast.makeText(this,R.string.ag_delete_error,Toast.LENGTH_LONG).show();});}
         });
-
-        bannerCard.setOnClickListener(v ->
-                startActivity(new Intent(this, CreateWorkoutActivity.class))
-        );
-
-        loadWorkouts();
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        loadWorkouts();
-    }
-
-    private void loadWorkouts() {
-        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
-
-        if (currentUser == null) {
-            workoutAdapter.updateList(new ArrayList<>());
-            return;
-        }
-
-        String uid = currentUser.getUid();
-
-        new Thread(() -> {
-            List<WorkoutEntity> workouts = appDatabase.workoutDao().getAllWorkoutsByUser(uid);
-            runOnUiThread(() -> workoutAdapter.updateList(new ArrayList<>(workouts)));
-        }).start();
-    }
-
-    private void showDeleteDialog(WorkoutEntity workout) {
-        new AlertDialog.Builder(this)
-                .setTitle("Удаление тренировки")
-                .setMessage("Удалить тренировку \"" + workout.getTitle() + "\"?")
-                .setPositiveButton("Удалить", (dialog, which) -> deleteWorkout(workout))
-                .setNegativeButton("Отмена", null)
-                .show();
-    }
-
-    private void deleteWorkout(WorkoutEntity workout) {
-        new Thread(() -> {
-            if (appDatabase.sessionDraftDao().get(workout.getUserId(),workout.getId()) != null) {
-                runOnUiThread(() -> Toast.makeText(this,"Сначала завершите сохранённую тренировку",Toast.LENGTH_LONG).show());
-                return;
-            }
-            appDatabase.runInTransaction(() -> {
-                appDatabase.exerciseDao().deleteByWorkout(workout.getId());
-                appDatabase.workoutDao().deleteWorkout(workout);
-            });
-
-            runOnUiThread(() -> {
-                Toast.makeText(
-                        WorkoutsActivity.this,
-                        "Тренировка удалена",
-                        Toast.LENGTH_SHORT
-                ).show();
-                loadWorkouts();
-            });
-        }).start();
     }
 }

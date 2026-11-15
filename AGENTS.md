@@ -9,3 +9,6 @@
 - Never print embedded API keys, credential files or signed URLs. Production Firebase rules are unavailable; no live data mutations for tests. Cloud sync/account-deletion still have documented gaps.
 - Keep documentation honest: distinguish implemented, compiled, unit-tested, device-tested and planned. Do not call this a production-ready release.
 - Update `docs/PROGRESS.md` with commands, results, blockers and the precise next task before ending a substantial session.
+
+- Work one screen at a time: finish screen → build/check → commit → next screen. Home and workout list redesign are completed in the 2026-11-15 checkpoint; do not repeat them.
+- Next task is runtime visual validation and real screenshots of those two screens, not new feature work. Read the latest section of PROGRESS first; older sections are historical.

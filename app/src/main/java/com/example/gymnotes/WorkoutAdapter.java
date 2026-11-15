@@ -20,6 +20,8 @@ public class WorkoutAdapter extends RecyclerView.Adapter<WorkoutAdapter.WorkoutV
 
     private final ArrayList<WorkoutEntity> workoutList;
     private final OnWorkoutClickListener listener;
+    private java.util.Set<Integer> draftIds = new java.util.HashSet<>();
+    public void setDraftIds(java.util.Set<Integer> ids) { draftIds=ids; }
 
     public WorkoutAdapter(ArrayList<WorkoutEntity> workoutList, OnWorkoutClickListener listener) {
         this.workoutList = workoutList;
@@ -44,9 +46,13 @@ public class WorkoutAdapter extends RecyclerView.Adapter<WorkoutAdapter.WorkoutV
     public void onBindViewHolder(@NonNull WorkoutViewHolder holder, int position) {
         WorkoutEntity workout = workoutList.get(position);
 
+        boolean resume=draftIds.contains(workout.getId());
+        holder.draftBadge.setVisibility(resume?View.VISIBLE:View.GONE);
+        holder.buttonStart.setText(resume?R.string.ag_continue:R.string.ag_start);
+        holder.menu.setOnClickListener(v->listener.onItemLongClick(workout));
         holder.textWorkoutTitle.setText(workout.getTitle());
-        holder.textWorkoutInfo.setText(workout.getExerciseCount() + " упражнений");
-        holder.textWorkoutTime.setText("~" + workout.getEstimatedTime() + " мин");
+        holder.textWorkoutInfo.setText(holder.itemView.getContext().getString(R.string.ag_exercises,workout.getExerciseCount()));
+        holder.textWorkoutTime.setText(holder.itemView.getContext().getString(R.string.ag_time,workout.getEstimatedTime(),workout.getRestSeconds()));
 
         holder.itemView.setOnClickListener(v -> listener.onItemClick(workout));
         holder.itemView.setOnLongClickListener(v -> {
@@ -67,7 +73,7 @@ public class WorkoutAdapter extends RecyclerView.Adapter<WorkoutAdapter.WorkoutV
         TextView textWorkoutTitle;
         TextView textWorkoutInfo;
         TextView textWorkoutTime;
-        TextView buttonStart;
+        TextView buttonStart, draftBadge, menu;
 
         public WorkoutViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -75,6 +81,8 @@ public class WorkoutAdapter extends RecyclerView.Adapter<WorkoutAdapter.WorkoutV
             textWorkoutInfo = itemView.findViewById(R.id.textWorkoutInfo);
             textWorkoutTime = itemView.findViewById(R.id.textWorkoutTime);
             buttonStart = itemView.findViewById(R.id.buttonStart);
+            draftBadge=itemView.findViewById(R.id.draftBadge);
+            menu=itemView.findViewById(R.id.workoutMenu);
         }
     }
 }
