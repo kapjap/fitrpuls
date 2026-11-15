@@ -1,0 +1,10 @@
+<resources>
+<string name="home_pending">—</string><string name="home_xp_pending">— XP</string>
+<string name="home_level_label">LEVEL</string><string name="home_total_xp">%1$d XP</string>
+<string name="home_xp_remaining">До LVL %2$d · %1$d XP</string>
+<string name="home_xp_limit">Максимальный уровень</string>
+<string name="home_xp_accessibility">Уровень %1$d. Всего %2$d XP. До следующего уровня %3$d XP.</string>
+<string name="home_start_action">Выбрать тренировку</string><string name="home_resume_action">Продолжить тренировку</string>
+<string name="home_analytics">Аналитика ↗</string><string name="home_last_short">ПОСЛЕДНЯЯ</string>
+<style name="HomeMetric" parent="TextAppearance.Material3.TitleLarge"><item name="android:textColor">@color/app_text_primary</item><item name="android:textSize">24sp</item><item name="android:fontFamily">sans-serif-condensed</item><item name="android:textStyle">bold</item></style>
+</resources>

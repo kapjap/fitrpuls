@@ -1,39 +1,58 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto" android:id="@+id/main" android:layout_width="match_parent" android:layout_height="match_parent" android:background="@color/app_background" android:fillViewport="true">
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto" android:id="@+id/main" android:layout_width="match_parent" android:layout_height="match_parent" android:background="@color/app_background" android:fillViewport="true" android:clipToPadding="true">
 <androidx.constraintlayout.widget.ConstraintLayout android:layout_width="match_parent" android:layout_height="wrap_content">
-<LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:orientation="vertical" android:padding="20dp" app:layout_constraintWidth_max="600dp" app:layout_constraintStart_toStartOf="parent" app:layout_constraintEnd_toEndOf="parent" app:layout_constraintTop_toTopOf="parent">
-    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center_vertical">
-        <TextView android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="@string/ag_brand" android:textAppearance="@style/AgSection" android:fontFamily="sans-serif-condensed" android:textSize="28sp"/>
-        <TextView android:id="@+id/xpStatus" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textAppearance="@style/AgLabel"/>
-    </LinearLayout>
-    <TextView android:id="@+id/greeting" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="4dp" android:text="@string/home_journal" android:textAppearance="@style/AgBody"/>
-    <TextView android:id="@+id/subtitle" android:layout_width="match_parent" android:layout_height="wrap_content" android:textAppearance="@style/AgBody" android:visibility="gone"/>
-    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:layout_marginTop="16dp" android:padding="16dp" android:background="@color/welcome_ink">
-        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="top">
-            <LinearLayout android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:orientation="vertical">
-                <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/home_week" android:textAppearance="@style/WelcomeMicro"/>
-                <TextView android:id="@+id/weeklyStats" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="—" android:textSize="72sp" android:fontFamily="sans-serif-condensed" android:textStyle="bold" android:includeFontPadding="false" android:textColor="@color/welcome_paper"/>
-                <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/home_sessions" android:textColor="@color/welcome_muted" android:textSize="13sp"/>
+<LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:orientation="vertical" android:padding="16dp" app:layout_constraintWidth_max="600dp" app:layout_constraintStart_toStartOf="parent" app:layout_constraintEnd_toEndOf="parent" app:layout_constraintTop_toTopOf="parent">
+    <TextView android:id="@+id/greeting" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="10dp" android:text="@string/home_journal" android:textAppearance="@style/AgBody"/>
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:background="@color/welcome_ink" android:padding="16dp">
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="top" android:baselineAligned="false">
+            <LinearLayout android:layout_width="0dp" android:layout_weight="1.15" android:layout_height="wrap_content" android:orientation="vertical" android:contentDescription="@string/ag_brand" android:importantForAccessibility="yes" android:focusable="true">
+                <androidx.appcompat.widget.AppCompatTextView android:layout_width="match_parent" android:layout_height="62dp" android:text="@string/welcome_anti" android:fontFamily="sans-serif-condensed" android:textStyle="bold" android:textColor="@color/welcome_paper" android:includeFontPadding="false" android:gravity="start|center_vertical" android:maxLines="1" app:autoSizeTextType="uniform" app:autoSizeMinTextSize="24sp" app:autoSizeMaxTextSize="64sp" android:importantForAccessibility="no"/>
+                <androidx.appcompat.widget.AppCompatTextView android:layout_width="match_parent" android:layout_height="58dp" android:layout_marginStart="18dp" android:text="@string/welcome_gym" android:fontFamily="sans-serif-condensed" android:textStyle="bold" android:textColor="@color/welcome_paper" android:includeFontPadding="false" android:gravity="start|center_vertical" android:maxLines="1" app:autoSizeTextType="uniform" app:autoSizeMinTextSize="24sp" app:autoSizeMaxTextSize="60sp" android:importantForAccessibility="no"/>
             </LinearLayout>
-            <LinearLayout android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:orientation="vertical" android:layout_marginStart="12dp" android:layout_marginTop="24dp">
-                <TextView android:id="@+id/weeklyMinutes" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="—" android:textColor="@color/welcome_paper" android:textSize="24sp" android:fontFamily="sans-serif-medium"/>
-                <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/home_minutes" android:textColor="@color/welcome_muted" android:textSize="13sp"/>
-                <TextView android:id="@+id/weeklyDetail" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:text="—" android:textColor="@color/welcome_paper" android:textSize="24sp" android:fontFamily="sans-serif-medium"/>
-                <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/home_volume" android:textColor="@color/welcome_muted" android:textSize="13sp"/>
+            <LinearLayout android:id="@+id/levelPanel" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:layout_marginStart="16dp" android:orientation="vertical">
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="top" android:baselineAligned="false">
+                    <LinearLayout android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:orientation="vertical">
+                        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/home_level_label" android:textAppearance="@style/WelcomeMicro"/>
+                        <androidx.appcompat.widget.AppCompatTextView android:id="@+id/levelNumber" android:layout_width="match_parent" android:layout_height="56dp" android:text="@string/home_pending" android:fontFamily="sans-serif-condensed" android:textStyle="bold" android:textColor="@color/welcome_paper" android:includeFontPadding="false" android:maxLines="1" app:autoSizeTextType="uniform" app:autoSizeMinTextSize="18sp" app:autoSizeMaxTextSize="48sp"/>
+                    </LinearLayout>
+                    <ImageView android:layout_width="14dp" android:layout_height="63dp" android:layout_marginStart="6dp" android:src="@drawable/ag_club_mark" android:importantForAccessibility="no" android:contentDescription="@null"/>
+                </LinearLayout>
+                <TextView android:id="@+id/xpStatus" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/home_xp_pending" android:textSize="14sp" android:textColor="@color/welcome_paper"/>
+                <ProgressBar android:id="@+id/xpProgress" style="?android:attr/progressBarStyleHorizontal" android:layout_width="match_parent" android:layout_height="4dp" android:layout_marginTop="8dp" android:layout_marginBottom="6dp" android:max="500" android:progress="0" android:indeterminate="false" android:progressDrawable="@drawable/home_xp_track" android:progressTint="@color/welcome_lime" android:progressBackgroundTint="@color/welcome_rule"/>
+                <TextView android:id="@+id/xpNext" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/home_pending" android:textSize="11sp" android:textColor="@color/welcome_muted"/>
             </LinearLayout>
-            <ImageView android:layout_width="16dp" android:layout_height="72dp" android:layout_marginStart="8dp" android:src="@drawable/ag_club_mark" android:importantForAccessibility="no" android:contentDescription="@null"/>
         </LinearLayout>
-        <com.google.android.material.button.MaterialButton android:id="@+id/startWorkout" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="56dp" android:layout_marginTop="16dp" android:insetTop="0dp" android:insetBottom="0dp" android:text="@string/ag_choose" android:textAllCaps="false" android:textColor="@color/welcome_ink" app:backgroundTint="@color/welcome_lime" app:cornerRadius="0dp"/>
-        <TextView android:id="@+id/resumeDetail" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:textColor="@color/welcome_muted" android:textSize="13sp" android:visibility="gone"/>
+        <TextView android:id="@+id/levelNotice" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="6dp" android:textColor="@color/welcome_lime" android:textSize="12sp" android:visibility="gone" android:accessibilityLiveRegion="polite"/>
+        <TextView android:id="@+id/subtitle" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="6dp" android:textColor="@color/welcome_muted" android:textSize="13sp" android:visibility="gone"/>
+        <com.google.android.material.button.MaterialButton android:id="@+id/startWorkout" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="64dp" android:layout_marginTop="16dp" android:paddingStart="16dp" android:paddingEnd="16dp" android:gravity="start|center_vertical" android:insetTop="0dp" android:insetBottom="0dp" android:text="@string/home_start_action" android:textSize="17sp" android:textAllCaps="false" android:textColor="@color/welcome_ink" app:backgroundTint="@color/welcome_lime" app:cornerRadius="0dp" app:icon="@drawable/welcome_arrow" app:iconGravity="end" app:iconTint="@color/welcome_ink"/>
+        <TextView android:id="@+id/resumeDetail" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="6dp" android:textColor="@color/welcome_muted" android:textSize="13sp" android:visibility="gone"/>
     </LinearLayout>
-    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:gravity="center_vertical">
-        <TextView android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="@string/home_last" android:textAppearance="@style/AgLabel"/>
-        <com.google.android.material.button.MaterialButton android:id="@+id/openProgress" style="@style/HomeUtility" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/home_history"/>
+    <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="14dp" android:layout_marginBottom="6dp" android:text="@string/home_week" android:textAppearance="@style/AgLabel"/>
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:baselineAligned="false">
+        <LinearLayout android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:orientation="vertical">
+            <TextView android:id="@+id/weeklyStats" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/home_pending" android:textAppearance="@style/HomeMetric"/>
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/home_sessions" android:textSize="12sp" android:textColor="@color/app_text_secondary"/>
+        </LinearLayout>
+        <View android:layout_width="1dp" android:layout_height="44dp" android:layout_marginStart="8dp" android:layout_marginEnd="8dp" android:background="@color/app_surface_alt" android:importantForAccessibility="no"/>
+        <LinearLayout android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:orientation="vertical">
+            <TextView android:id="@+id/weeklyMinutes" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/home_pending" android:textAppearance="@style/HomeMetric"/>
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/home_minutes" android:textSize="12sp" android:textColor="@color/app_text_secondary"/>
+        </LinearLayout>
+        <View android:layout_width="1dp" android:layout_height="44dp" android:layout_marginStart="8dp" android:layout_marginEnd="8dp" android:background="@color/app_surface_alt" android:importantForAccessibility="no"/>
+        <LinearLayout android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:orientation="vertical">
+            <TextView android:id="@+id/weeklyDetail" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/home_pending" android:textAppearance="@style/HomeMetric"/>
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/home_volume" android:textSize="12sp" android:textColor="@color/app_text_secondary"/>
+        </LinearLayout>
+    </LinearLayout>
+    <View android:layout_width="match_parent" android:layout_height="1dp" android:layout_marginTop="14dp" android:background="@color/app_surface_alt" android:importantForAccessibility="no"/>
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center_vertical">
+        <TextView android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="@string/home_last_short" android:textAppearance="@style/AgLabel"/>
+        <com.google.android.material.button.MaterialButton android:id="@+id/openProgress" style="@style/HomeUtility" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/home_analytics"/>
     </LinearLayout>
     <TextView android:id="@+id/lastWorkout" android:layout_width="match_parent" android:layout_height="wrap_content" android:textAppearance="@style/AgSection"/>
     <TextView android:id="@+id/lastDetail" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="4dp" android:textAppearance="@style/AgBody"/>
     <com.google.android.material.button.MaterialButton android:id="@+id/explainBody" style="@style/HomeUtility" android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="start|center_vertical" android:text="@string/home_insight"/>
-    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/app_surface_alt" android:layout_marginTop="4dp" android:importantForAccessibility="no"/>
+    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/app_surface_alt" android:importantForAccessibility="no"/>
     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content">
         <com.google.android.material.button.MaterialButton android:id="@+id/openNotes" style="@style/HomeUtility" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="@string/notes"/>
         <com.google.android.material.button.MaterialButton android:id="@+id/openNews" style="@style/HomeUtility" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="@string/news"/>

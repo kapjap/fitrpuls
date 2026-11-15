@@ -18,6 +18,7 @@ public class HomeMenuActivity extends AppCompatActivity {
     private long welcomeStartedAt;
     private SessionDraft latestDraft;
     private String progressExplanation;
+    private boolean levelLoaded;
     @Override protected void onCreate(Bundle state) {
         super.onCreate(state);
         setContentView(R.layout.activity_home_menu);
@@ -49,7 +50,7 @@ public class HomeMenuActivity extends AppCompatActivity {
         DashboardViewModel model=new ViewModelProvider(this).get(DashboardViewModel.class);
         model.latestDraft(user.getUid()).observe(this,draft->{
             latestDraft=draft;
-            ((TextView)findViewById(R.id.startWorkout)).setText(draft==null?R.string.ag_choose:R.string.ag_resume);
+            ((TextView)findViewById(R.id.startWorkout)).setText(draft==null?R.string.home_start_action:R.string.home_resume_action);
             TextView detail=findViewById(R.id.resumeDetail);detail.setVisibility(draft==null?android.view.View.GONE:android.view.View.VISIBLE);
             if(draft!=null){
                 detail.setText(R.string.ag_draft);
@@ -70,11 +71,22 @@ public class HomeMenuActivity extends AppCompatActivity {
             if (current != null && WelcomeBackEvent.canPresent(pending, current.getUid(),
                     android.os.SystemClock.elapsedRealtime() - welcomeStartedAt))
                 firstLevelEffect = FirstLevelEffect.showWelcomeBack(this, level);
-            TextView xpStatus=findViewById(R.id.xpStatus);
-            xpStatus.setText(getString(R.string.home_xp,level,xp));
+            HomeLevelProgress levelProgress = new HomeLevelProgress(xp);
+            ((TextView)findViewById(R.id.levelNumber)).setText(String.format(Locale.getDefault(), "%02d", level));
+            ((TextView)findViewById(R.id.xpStatus)).setText(getString(R.string.home_total_xp, xp));
+            ((TextView)findViewById(R.id.xpNext)).setText(level == Integer.MAX_VALUE
+                    ? getString(R.string.home_xp_limit)
+                    : getString(R.string.home_xp_remaining, levelProgress.remaining, level + 1));
+            android.widget.ProgressBar bar = findViewById(R.id.xpProgress);
+            boolean animate = levelLoaded && character.effects() && AuthScreenUi.motionAllowed(this);
+            bar.setProgress(levelProgress.progress, animate);
+            bar.setContentDescription(getString(R.string.home_xp_accessibility, level, xp, levelProgress.remaining));
+            levelLoaded = true;
+            TextView notice = findViewById(R.id.levelNotice);
             if(character.consumeLevelUp(level)) {
-                xpStatus.setText(getString(R.string.home_level_up,level));
-                if(android.provider.Settings.Global.getFloat(getContentResolver(),android.provider.Settings.Global.ANIMATOR_DURATION_SCALE,1f)>0){xpStatus.setAlpha(0.3f);xpStatus.animate().alpha(1f).setDuration(450).start();}
+                notice.setVisibility(android.view.View.VISIBLE);
+                notice.setText(getString(R.string.home_level_up,level));
+                if(AuthScreenUi.motionAllowed(this)){notice.setAlpha(0.3f);notice.animate().alpha(1f).setDuration(450).start();}
             }
             Calendar week=Calendar.getInstance();
             week.set(Calendar.DAY_OF_WEEK,Calendar.MONDAY);week.set(Calendar.HOUR_OF_DAY,0);
