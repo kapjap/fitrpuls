@@ -5,6 +5,7 @@ import androidx.lifecycle.*;
 import java.util.List;
 public class DashboardViewModel extends AndroidViewModel {
     public DashboardViewModel(@NonNull Application app) { super(app); }
+    public LiveData<SessionDraft> latestDraft(String uid) { return DatabaseProvider.get(getApplication()).sessionDraftDao().observeLatest(uid); }
     public LiveData<String> insight(String uid) {
         return Transformations.map(DatabaseProvider.get(getApplication()).completedExerciseDao().observeHistory(uid), ProgressInsight::explain);
     }

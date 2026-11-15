@@ -15,6 +15,11 @@ public final class MainNavigation {
         LinearLayout shell=new LinearLayout(activity);shell.setOrientation(LinearLayout.VERTICAL);
         shell.addView(screen,new LinearLayout.LayoutParams(-1,0,1));
         BottomNavigationView nav=new BottomNavigationView(activity);
+        nav.setBackgroundColor(androidx.core.content.ContextCompat.getColor(activity,R.color.app_surface));
+        android.content.res.ColorStateList colors=new android.content.res.ColorStateList(new int[][]{new int[]{android.R.attr.state_checked},new int[]{}},new int[]{androidx.core.content.ContextCompat.getColor(activity,R.color.app_accent),androidx.core.content.ContextCompat.getColor(activity,R.color.app_text_secondary)});
+        nav.setItemTextColor(colors);nav.setItemIconTintList(colors);
+        nav.setItemActiveIndicatorColor(android.content.res.ColorStateList.valueOf(androidx.core.content.ContextCompat.getColor(activity,R.color.app_surface_alt)));
+        nav.setItemTextAppearanceActive(R.style.AgNavLabel);nav.setItemTextAppearanceInactive(R.style.AgNavLabel);
         nav.setLabelVisibilityMode(NavigationBarView.LABEL_VISIBILITY_LABELED);
         String[] labels={"Главная","Тренировки","Прогресс","Залы","Профиль"};
         int[] icons={R.drawable.nav_home,R.drawable.nav_workout,R.drawable.nav_progress,R.drawable.nav_map,R.drawable.ic_profile_person};

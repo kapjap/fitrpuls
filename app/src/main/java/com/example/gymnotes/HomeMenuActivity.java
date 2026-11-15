@@ -13,6 +13,7 @@ import java.util.Date;
 import java.util.Locale;
 
 public class HomeMenuActivity extends AppCompatActivity {
+    private SessionDraft latestDraft;
     @Override protected void onCreate(Bundle state) {
         super.onCreate(state);
         setContentView(R.layout.activity_home_menu);
@@ -21,15 +22,27 @@ public class HomeMenuActivity extends AppCompatActivity {
         if(user==null){startActivity(new Intent(this,MainActivity.class));finish();return;}
         CharacterPreferences character=new CharacterPreferences(this);
         String line=character.greeting(System.currentTimeMillis());
-        if(line!=null)((TextView)findViewById(R.id.subtitle)).setText(line);
+        if(line!=null){((TextView)findViewById(R.id.subtitle)).setText(line);findViewById(R.id.subtitle).setVisibility(android.view.View.VISIBLE);}
         String name=user.getDisplayName();
         if(name!=null&&!name.trim().isEmpty()) ((TextView)findViewById(R.id.greeting)).setText("С возвращением, "+name.trim());
-        findViewById(R.id.startWorkout).setOnClickListener(v->open(WorkoutsActivity.class));
+        findViewById(R.id.startWorkout).setOnClickListener(v->{
+            if(latestDraft==null){open(WorkoutsActivity.class);return;}
+            startActivity(new Intent(this,WorkoutSessionActivity.class).putExtra("workout_id",latestDraft.workoutId));
+        });
         findViewById(R.id.openProgress).setOnClickListener(v->open(ProgressActivity.class));
         findViewById(R.id.openNotes).setOnClickListener(v->open(NotesMain.class));
         findViewById(R.id.openNews).setOnClickListener(v->open(News.class));
         findViewById(R.id.openSettings).setOnClickListener(v->open(SettingsActivity.class));
         DashboardViewModel model=new ViewModelProvider(this).get(DashboardViewModel.class);
+        model.latestDraft(user.getUid()).observe(this,draft->{
+            latestDraft=draft;
+            ((TextView)findViewById(R.id.startWorkout)).setText(draft==null?R.string.ag_choose:R.string.ag_resume);
+            TextView detail=findViewById(R.id.resumeDetail);detail.setVisibility(draft==null?android.view.View.GONE:android.view.View.VISIBLE);
+            if(draft!=null){
+                detail.setText(R.string.ag_draft);
+                try {SessionSnapshot snapshot=new com.google.gson.Gson().fromJson(draft.payload,SessionSnapshot.class);if(snapshot!=null && snapshot.title!=null)detail.setText(snapshot.title);}catch(RuntimeException ignored){}
+            }
+        });
         model.insight(user.getUid()).observe(this,value->((TextView)findViewById(R.id.explainBody)).setText(value));
         model.history(user.getUid()).observe(this,history->{
             long xp=TrainingXp.total(history);int level=TrainingXp.level(xp);
@@ -47,7 +60,7 @@ public class HomeMenuActivity extends AppCompatActivity {
             for(CompletedWorkoutEntity w:history)if(w.getCompletedAt()>=week.getTimeInMillis()){
                 count++;minutes+=w.getDurationMinutes();volume+=w.getTotalWeight();
             }
-            ((TextView)findViewById(R.id.weeklyStats)).setText(count+" тренировок · "+minutes+" мин");
+            ((TextView)findViewById(R.id.weeklyStats)).setText(count+" тренировок\n"+minutes+" мин");
             ((TextView)findViewById(R.id.weeklyDetail)).setText(String.format(Locale.getDefault(),"Объём: %,.0f кг · сохранено локально",volume));
             if(history.isEmpty()){
                 ((TextView)findViewById(R.id.lastWorkout)).setText("Здесь начинается твоя история");
@@ -63,7 +76,7 @@ public class HomeMenuActivity extends AppCompatActivity {
         super.onResume();
         CharacterPreferences preferences=new CharacterPreferences(this);
         if(!preferences.humor() || CharacterPreferences.NORMAL.equals(preferences.mode()))
-            ((TextView)findViewById(R.id.subtitle)).setText("Тренируйся. Замечай изменения. Продолжай.");
+            findViewById(R.id.subtitle).setVisibility(android.view.View.GONE);
     }
     private void open(Class<?> target){startActivity(new Intent(this,target));}
 }
