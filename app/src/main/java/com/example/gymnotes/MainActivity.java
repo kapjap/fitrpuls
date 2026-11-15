@@ -1,20 +1,28 @@
 package com.example.gymnotes;
 
-import android.animation.AnimatorSet;
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.RectEvaluator;
+import android.graphics.Rect;
+import android.graphics.Color;
+import android.provider.Settings;
+import android.view.animation.DecelerateInterpolator;
+import android.view.accessibility.AccessibilityManager;
 import android.animation.ObjectAnimator;
-import android.animation.ValueAnimator;
+
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ImageView;
+
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.core.view.WindowInsetsControllerCompat;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -22,6 +30,8 @@ import com.google.firebase.auth.FirebaseUser;
 public class MainActivity extends AppCompatActivity {
 
     private FirebaseAuth auth;
+    private ObjectAnimator entrance;
+    private View poster;
     private static final String LOG_TAG = "MainActivity";
 
     @Override
@@ -41,11 +51,17 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        ImageView imageViewLogo = findViewById(R.id.imageViewLogo);
+        // This dark editorial surface is local to welcome, including its system bars.
+        getWindow().setStatusBarColor(Color.TRANSPARENT);
+        getWindow().setNavigationBarColor(getColor(R.color.welcome_ink));
+        WindowInsetsControllerCompat bars = new WindowInsetsControllerCompat(getWindow(), getWindow().getDecorView());
+        bars.setAppearanceLightStatusBars(false);
+        bars.setAppearanceLightNavigationBars(false);
+        poster = findViewById(R.id.welcomePoster);
         Button buttonLogIn = findViewById(R.id.buttonLogin);
         Button buttonSignUp = findViewById(R.id.buttonSignup);
 
-        startPulseAnimation(imageViewLogo);
+        if (savedInstanceState == null) poster.post(this::revealPoster);
 
         buttonLogIn.setOnClickListener(v -> launchLogInScreen());
         buttonSignUp.setOnClickListener(v -> launchSignUpScreen());
@@ -53,29 +69,38 @@ public class MainActivity extends AppCompatActivity {
         View mainView = findViewById(R.id.main);
         if (mainView != null) {
             ViewCompat.setOnApplyWindowInsetsListener(mainView, (v, insets) -> {
-                Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+                Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.displayCutout());
                 v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
                 return insets;
             });
+            ViewCompat.requestApplyInsets(mainView);
         }
     }
 
-    private void startPulseAnimation(View view) {
-        ObjectAnimator scaleX = ObjectAnimator.ofFloat(view, "scaleX", 1f, 1.06f, 1f);
-        ObjectAnimator scaleY = ObjectAnimator.ofFloat(view, "scaleY", 1f, 1.06f, 1f);
+    private void revealPoster() {
+        AccessibilityManager accessibility = (AccessibilityManager) getSystemService(ACCESSIBILITY_SERVICE);
+        boolean reduceMotion = Settings.Global.getFloat(getContentResolver(),
+                Settings.Global.ANIMATOR_DURATION_SCALE, 1f) == 0f;
+        if (isFinishing() || isDestroyed() || reduceMotion
+                || (accessibility != null && accessibility.isTouchExplorationEnabled())) return;
+        // A single editorial wipe; actions stay visible and usable throughout.
+        int width = poster.getWidth(), height = poster.getHeight();
+        if (width == 0 || height == 0) return;
+        entrance = ObjectAnimator.ofObject(poster, "clipBounds", new RectEvaluator(),
+                new Rect(0, 0, width, 0), new Rect(0, 0, width, height));
+        entrance.setDuration(420);
+        entrance.setInterpolator(new DecelerateInterpolator(1.4f));
+        entrance.addListener(new AnimatorListenerAdapter() {
+            @Override public void onAnimationEnd(Animator animation) { poster.setClipBounds(null); }
+            @Override public void onAnimationCancel(Animator animation) { poster.setClipBounds(null); }
+        });
+        entrance.start();
+    }
 
-        scaleX.setDuration(1200);
-        scaleY.setDuration(1200);
-
-        scaleX.setRepeatCount(ValueAnimator.INFINITE);
-        scaleY.setRepeatCount(ValueAnimator.INFINITE);
-
-        scaleX.setRepeatMode(ValueAnimator.RESTART);
-        scaleY.setRepeatMode(ValueAnimator.RESTART);
-
-        AnimatorSet animatorSet = new AnimatorSet();
-        animatorSet.playTogether(scaleX, scaleY);
-        animatorSet.start();
+    @Override protected void onStop() {
+        if (entrance != null) entrance.cancel();
+        if (poster != null) poster.setClipBounds(null);
+        super.onStop();
     }
 
     private void launchSignUpScreen() {

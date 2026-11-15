@@ -11,5 +11,5 @@
 - Update `docs/PROGRESS.md` with commands, results, blockers and the precise next task before ending a substantial session.
 
 - Work one screen at a time: finish screen → build/check → commit → next screen. Home and workout list redesign are completed in the 2026-11-15 checkpoint; do not repeat them.
-- The active-workout stage is now complete; stop after its commit/push and report SHA. Next work needs agreement; runtime checks/screenshots remain pending. Read latest PROGRESS first.
+- The welcome-screen stage is complete after active workout. Stop after commit/push and Actions check; await owner phone review. Do not redesign login/registration or other screens without a new request. Runtime visual checks remain pending. Read latest PROGRESS first.
 - Never overwrite the owner's `.github/workflows/android.yml`. After each stage: local build/tests → commit → push → check Actions for that exact SHA and report APK build status. Owner downloads `ANTI-GYM-Debug` from Actions; no manual APK delivery.

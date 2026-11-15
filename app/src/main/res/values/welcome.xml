@@ -1,0 +1,20 @@
+<resources>
+    <!-- Scoped to the welcome poster; does not override the signed-in theme. -->
+    <color name="welcome_ink">#111211</color>
+    <color name="welcome_paper">#EAE8DF</color>
+    <color name="welcome_muted">#A6A79D</color>
+    <color name="welcome_rule">#3E4039</color>
+    <color name="welcome_lime">#C2F35B</color>
+    <string name="welcome_edition">НЕ ДЛЯ ПОКАЗА.</string>
+    <string name="welcome_index">01 / ВХОД</string>
+    <string name="welcome_anti" translatable="false">ANTI</string>
+    <string name="welcome_gym" translatable="false">GYM</string>
+    <string name="welcome_caption">Твой ритм.\nТвои правила.</string>
+    <string name="welcome_note">ТРЕНИРОВКИ / ЛИЧНЫЙ ПРОГРЕСС</string>
+    <style name="WelcomeMicro" parent="TextAppearance.Material3.LabelSmall">
+        <item name="android:textColor">@color/welcome_muted</item>
+        <item name="android:fontFamily">monospace</item>
+        <item name="android:textSize">11sp</item>
+        <item name="android:letterSpacing">0.06</item>
+    </style>
+</resources>
