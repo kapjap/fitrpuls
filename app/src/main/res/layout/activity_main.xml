@@ -33,7 +33,7 @@
             <!-- The brand is a typographic poster, read as one name by TalkBack. -->
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/welcomePoster" android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:layout_marginTop="24dp" android:layout_marginBottom="24dp"
+                android:layout_marginTop="28dp" android:layout_marginBottom="32dp"
                 android:contentDescription="@string/ag_brand" android:importantForAccessibility="yes" android:focusable="true">
                 <androidx.appcompat.widget.AppCompatTextView android:id="@+id/welcomeAnti"
                     android:layout_width="0dp" android:layout_height="116dp"
@@ -44,11 +44,11 @@
                     app:autoSizeTextType="uniform" app:autoSizeMinTextSize="48sp" app:autoSizeMaxTextSize="128sp" app:autoSizeStepGranularity="1sp"
                     app:layout_constraintStart_toStartOf="parent" app:layout_constraintEnd_toStartOf="@id/welcomeTicket"
                     app:layout_constraintTop_toTopOf="parent" android:layout_marginEnd="12dp"/>
-                <ImageView android:id="@+id/welcomeTicket" android:layout_width="32dp" android:layout_height="176dp"
-                    android:src="@drawable/welcome_ticket" android:contentDescription="@null" android:importantForAccessibility="no"
+                <ImageView android:id="@+id/welcomeTicket" android:layout_width="32dp" android:layout_height="144dp"
+                    android:src="@drawable/ag_club_mark" android:contentDescription="@null" android:importantForAccessibility="no"
                     app:layout_constraintTop_toTopOf="parent" app:layout_constraintEnd_toEndOf="parent"/>
                 <androidx.appcompat.widget.AppCompatTextView android:id="@+id/welcomeGym"
-                    android:layout_width="0dp" android:layout_height="116dp" android:layout_marginStart="40dp" android:layout_marginEnd="40dp"
+                    android:layout_width="0dp" android:layout_height="116dp" android:layout_marginStart="32dp" android:layout_marginEnd="24dp"
                     android:fontFamily="sans-serif-condensed" android:textStyle="bold"
                     android:includeFontPadding="false" android:gravity="end|center_vertical"
                     android:text="@string/welcome_gym" android:textColor="@color/welcome_paper"
@@ -57,7 +57,7 @@
                     app:layout_constraintStart_toStartOf="parent" app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toBottomOf="@id/welcomeAnti"/>
                 <TextView android:layout_width="0dp" android:layout_height="wrap_content"
-                    android:layout_marginStart="40dp" android:layout_marginTop="16dp"
+                    android:layout_marginStart="32dp" android:layout_marginTop="16dp"
                     android:fontFamily="sans-serif-medium" android:textSize="20sp" android:textColor="@color/welcome_paper"
                     android:text="@string/welcome_caption" android:lineSpacingExtra="2dp"
                     app:layout_constraintStart_toStartOf="parent" app:layout_constraintEnd_toEndOf="parent"

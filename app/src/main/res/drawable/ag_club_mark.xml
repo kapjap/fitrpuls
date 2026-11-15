@@ -1,0 +1,5 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="32dp" android:height="144dp" android:viewportWidth="32" android:viewportHeight="144">
+    <!-- ANTI-GYM: two offset cuts and an open, asymmetric tail. -->
+    <path android:fillColor="@color/welcome_lime" android:pathData="M0,0 L32,0 L32,126 L20,144 L20,117 L12,127 L0,127 Z"/>
+    <path android:fillColor="@color/welcome_ink" android:pathData="M0,30 L23,12 L23,22 L0,40 Z M9,45 L32,27 L32,37 L9,55 Z"/>
+</vector>

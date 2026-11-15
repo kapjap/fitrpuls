@@ -4,7 +4,6 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.RectEvaluator;
 import android.graphics.Rect;
-import android.graphics.Color;
 import android.provider.Settings;
 import android.view.animation.DecelerateInterpolator;
 import android.view.accessibility.AccessibilityManager;
@@ -19,10 +18,6 @@ import android.widget.Button;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
-import androidx.core.view.WindowInsetsControllerCompat;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -51,12 +46,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        // This dark editorial surface is local to welcome, including its system bars.
-        getWindow().setStatusBarColor(Color.TRANSPARENT);
-        getWindow().setNavigationBarColor(getColor(R.color.welcome_ink));
-        WindowInsetsControllerCompat bars = new WindowInsetsControllerCompat(getWindow(), getWindow().getDecorView());
-        bars.setAppearanceLightStatusBars(false);
-        bars.setAppearanceLightNavigationBars(false);
+        AuthScreenUi.install(this);
         poster = findViewById(R.id.welcomePoster);
         Button buttonLogIn = findViewById(R.id.buttonLogin);
         Button buttonSignUp = findViewById(R.id.buttonSignup);
@@ -66,15 +56,6 @@ public class MainActivity extends AppCompatActivity {
         buttonLogIn.setOnClickListener(v -> launchLogInScreen());
         buttonSignUp.setOnClickListener(v -> launchSignUpScreen());
 
-        View mainView = findViewById(R.id.main);
-        if (mainView != null) {
-            ViewCompat.setOnApplyWindowInsetsListener(mainView, (v, insets) -> {
-                Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.displayCutout());
-                v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-                return insets;
-            });
-            ViewCompat.requestApplyInsets(mainView);
-        }
     }
 
     private void revealPoster() {
@@ -105,11 +86,11 @@ public class MainActivity extends AppCompatActivity {
 
     private void launchSignUpScreen() {
         Intent intent = new Intent(this, Sign_Up_Activity.class);
-        startActivity(intent);
+        AuthScreenUi.open(this, intent);
     }
 
     private void launchLogInScreen() {
         Intent intent = new Intent(this, Log_in_Activity.class);
-        startActivity(intent);
+        AuthScreenUi.open(this, intent);
     }
 }

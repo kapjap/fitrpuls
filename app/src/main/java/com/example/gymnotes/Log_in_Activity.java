@@ -10,9 +10,6 @@ import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
@@ -51,7 +48,7 @@ public class Log_in_Activity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(Log_in_Activity.this, Sign_Up_Activity.class);
-                startActivity(intent);
+                AuthScreenUi.open(Log_in_Activity.this, intent);
             }
         });
 
@@ -66,11 +63,10 @@ public class Log_in_Activity extends AppCompatActivity {
         });
 
 
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
+        AuthScreenUi.install(this);
+        AuthScreenUi.back(this);
+        findViewById(R.id.auth_back_button).setOnClickListener(v -> getOnBackPressedDispatcher().onBackPressed());
+        AuthScreenUi.keyboardDone(this, editTextPassword, buttonLogin);
     }
 
     private void launchNextScreenReset_email() {

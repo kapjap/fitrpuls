@@ -1,0 +1,51 @@
+<resources>
+    <string name="auth_login_index">02 / ВХОД</string>
+    <string name="auth_signup_index">03 / РЕГИСТРАЦИЯ</string>
+    <string name="auth_login_title">ТВОЯ\nЗАПИСЬ.</string>
+    <string name="auth_signup_title">НОВАЯ\nЗАПИСЬ.</string>
+    <string name="auth_back">Назад</string>
+    <style name="ThemeOverlay.AntiGym.Auth" parent="ThemeOverlay.Material3">
+        <item name="colorPrimary">@color/welcome_lime</item>
+        <item name="colorOnPrimary">@color/welcome_ink</item>
+        <item name="colorSurface">@color/welcome_ink</item>
+        <item name="colorOnSurface">@color/welcome_paper</item>
+        <item name="colorControlActivated">@color/welcome_lime</item>
+        <item name="android:colorAccent">@color/welcome_lime</item>
+    </style>
+    <style name="AuthField" parent="Widget.AppCompat.EditText">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:minHeight">60dp</item>
+        <item name="android:padding">16dp</item>
+        <item name="android:layout_marginTop">6dp</item>
+        <item name="android:layout_marginBottom">18dp</item>
+        <item name="android:textColor">@color/welcome_paper</item>
+        <item name="android:textColorHint">@color/welcome_muted</item>
+        <item name="android:textSize">18sp</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:background">@drawable/auth_field</item>
+    </style>
+    <style name="AuthAction" parent="Widget.Material3.Button">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:minHeight">64dp</item>
+        <item name="android:padding">16dp</item>
+        <item name="android:insetTop">0dp</item><item name="android:insetBottom">0dp</item>
+        <item name="android:textColor">@color/welcome_ink</item>
+        <item name="android:textSize">18sp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:gravity">start|center_vertical</item>
+        <item name="backgroundTint">@color/welcome_paper</item>
+        <item name="cornerRadius">0dp</item>
+        <item name="icon">@drawable/welcome_arrow</item><item name="iconGravity">end</item>
+        <item name="iconTint">@color/welcome_ink</item>
+    </style>
+    <style name="AuthLink" parent="Widget.Material3.Button.TextButton">
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:minHeight">48dp</item>
+        <item name="android:textColor">@color/welcome_lime</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:textSize">14sp</item>
+        <item name="cornerRadius">0dp</item>
+    </style>
+</resources>
