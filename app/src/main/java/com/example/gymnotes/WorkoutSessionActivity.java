@@ -64,6 +64,9 @@ public class WorkoutSessionActivity extends AppCompatActivity {
     private String sessionUid;
     private boolean loaded;
     private long lastTick;
+    private int saveRevision;
+    private TextView saveStatus;
+    private TextView sessionProgress;
 
 
     private int workoutId;
@@ -127,7 +130,10 @@ public class WorkoutSessionActivity extends AppCompatActivity {
         rootView = findViewById(R.id.main);
 
         ViewCompat.setOnApplyWindowInsetsListener(rootView, (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.ime());
+            boolean keyboard = insets.isVisible(WindowInsetsCompat.Type.ime());
+            findViewById(R.id.restPanel).setVisibility(keyboard ? View.GONE : View.VISIBLE);
+            findViewById(R.id.buttonFinishWorkout).setVisibility(keyboard ? View.GONE : View.VISIBLE);
             v.setPadding(
                     v.getPaddingLeft(),
                     systemBars.top,
@@ -137,6 +143,9 @@ public class WorkoutSessionActivity extends AppCompatActivity {
             return insets;
         });
 
+        saveStatus = findViewById(R.id.saveStatus);
+        sessionProgress = findViewById(R.id.sessionProgress);
+        saveStatus.setOnClickListener(v -> persistSession());
         buttonBack = findViewById(R.id.buttonBack);
         buttonPause = findViewById(R.id.buttonPause);
         textWorkoutTitle = findViewById(R.id.textWorkoutTitle);
@@ -171,10 +180,10 @@ public class WorkoutSessionActivity extends AppCompatActivity {
         adapter = new WorkoutProgressAdapter(exerciseList, (position, setIndex) -> {
             if (!loaded || isFinishingWorkout) return;
             SessionSnapshot.Entry item = exerciseList.get(position);
-            if(setIndex < 0) { persistSession(); return; }
+            if(setIndex < 0) { updateSessionProgress(); persistSession(); return; }
             SessionSnapshot.SetEntry set=item.sets.get(setIndex);
             set.done=!set.done;
-            adapter.notifyItemChanged(position);
+            updateSessionProgress();
             if(set.done && autoRestEnabled && !isPaused) startRestAutomatically();
             persistSession();
         });
@@ -193,9 +202,12 @@ public class WorkoutSessionActivity extends AppCompatActivity {
         buttonBack.setOnClickListener(v -> finish());
 
         buttonPause.setOnClickListener(v -> {
+            if (!loaded || isFinishingWorkout) return;
             isPaused = !isPaused;
             lastTick = android.os.SystemClock.elapsedRealtime();
             persistSession();
+            updateRestButtons();
+            updateTimers();
 
             if (isPaused) {
                 buttonPause.setImageResource(R.drawable.baseline_play_arrow_24);
@@ -207,6 +219,7 @@ public class WorkoutSessionActivity extends AppCompatActivity {
         });
 
         buttonStartRest.setOnClickListener(v -> {
+            if (!loaded || isFinishingWorkout) return;
             if (isPaused) {
                 Toast.makeText(this, "Сначала снимите тренировку с паузы", Toast.LENGTH_SHORT).show();
                 return;
@@ -246,19 +259,41 @@ public class WorkoutSessionActivity extends AppCompatActivity {
         return new com.google.gson.Gson().fromJson(new com.google.gson.Gson().toJson(session), SessionSnapshot.class);
     }
 
+    private void updateSessionProgress() {
+        if (session == null) return;
+        int done = 0, total = 0;
+        for (SessionSnapshot.Entry entry : session.entries) {
+            done += entry.doneCount(); total += entry.sets.size();
+        }
+        sessionProgress.setText(getString(R.string.session_progress, done, total));
+    }
+
     private void persistSession() {
         if (!loaded || isFinishingWorkout) return;
+        int revision = ++saveRevision;
+        saveStatus.setText(adapter.hasInvalidInput() ? R.string.session_input_error : R.string.session_saving);
         SessionSnapshot snapshot = captureSession();
         SessionRepository.IO.execute(() -> {
-            try { repository.save(sessionUid, workoutId, snapshot); }
-            catch (Exception e) { runOnUiThread(() -> {
-                if (!isDestroyed()) Toast.makeText(this, "Не удалось сохранить тренировку. Проверьте свободное место.", Toast.LENGTH_LONG).show();
-            }); }
+            try {
+                repository.save(sessionUid, workoutId, snapshot);
+                runOnUiThread(() -> {
+                    if (!isDestroyed() && revision == saveRevision && !isFinishingWorkout)
+                        saveStatus.setText(adapter.hasInvalidInput() ? R.string.session_input_error : R.string.session_saved);
+                });
+            } catch (Exception e) {
+                runOnUiThread(() -> {
+                    if (!isDestroyed() && revision == saveRevision) saveStatus.setText(R.string.session_save_failed);
+                });
+            }
         });
     }
 
     private void finishWorkoutAndSave() {
         if (!loaded || isFinishingWorkout) return;
+        if (adapter.hasInvalidInput()) {
+            Toast.makeText(this, R.string.session_fix_fields, Toast.LENGTH_LONG).show();
+            return;
+        }
         if (session.completedExercises() == 0) {
             Toast.makeText(this, "Отметьте хотя бы один выполненный подход", Toast.LENGTH_SHORT).show();
             return;
@@ -273,6 +308,8 @@ public class WorkoutSessionActivity extends AppCompatActivity {
     private void saveCompletedSession() {
         if (isFinishingWorkout) return;
         isFinishingWorkout = true;
+        adapter.setLocked(true);
+        updateRestButtons();
         buttonFinishWorkout.setEnabled(false);
         SessionSnapshot snapshot = captureSession();
         SessionRepository.IO.execute(() -> {
@@ -285,6 +322,8 @@ public class WorkoutSessionActivity extends AppCompatActivity {
             } catch (Exception e) {
                 runOnUiThread(() -> {
                     isFinishingWorkout = false;
+                    adapter.setLocked(false);
+                    updateRestButtons();
                     buttonFinishWorkout.setEnabled(true);
                     Toast.makeText(this, "Не удалось завершить. Тренировка остаётся открытой; попробуйте ещё раз.", Toast.LENGTH_LONG).show();
                 });
@@ -388,10 +427,10 @@ public class WorkoutSessionActivity extends AppCompatActivity {
     }
 
     private void loadWorkoutRest() {
-        new Thread(() -> {
+        SessionRepository.IO.execute(() -> {
             WorkoutEntity workout = appDatabase.workoutDao().getWorkoutById(workoutId);
 
-            if (workout != null) {
+            if (workout != null && sessionUid.equals(workout.getUserId())) {
                 int workoutRest = workout.getRestSeconds();
 
                 if (workoutRest > 0) {
@@ -406,7 +445,7 @@ public class WorkoutSessionActivity extends AppCompatActivity {
             }
 
             runOnUiThread(this::updateTimers);
-        }).start();
+        });
     }
 
     private void loadExercises() {
@@ -434,6 +473,9 @@ public class WorkoutSessionActivity extends AppCompatActivity {
                     buttonFinishWorkout.setEnabled(true);
                     adapter.notifyDataSetChanged();
                     updateTimers();
+                    updateRestButtons();
+                    updateSessionProgress();
+                    saveStatus.setText(R.string.session_saved);
                     if (exerciseList.isEmpty()) Toast.makeText(this, "Добавьте упражнения в тренировку", Toast.LENGTH_LONG).show();
                 });
             } catch (Exception e) {
@@ -450,17 +492,17 @@ public class WorkoutSessionActivity extends AppCompatActivity {
     private void updateTimers() {
         textWorkoutTimer.setText(formatTime(workoutSeconds));
         textRestTimer.setText(formatTime(restSeconds));
-        textRestTotal.setText("из " + totalRestSeconds + " сек");
+        textRestTotal.setText(isPaused ? getString(R.string.session_paused)
+                : isRestRunning ? getString(R.string.session_rest_running)
+                : getString(R.string.session_rest_ready, totalRestSeconds));
+        buttonPause.setContentDescription(getString(isPaused ? R.string.session_resume : R.string.session_pause));
     }
 
     private void updateRestButtons() {
-        if (isRestRunning) {
-            buttonStartRest.setAlpha(0.5f);
-            buttonSkipRest.setAlpha(1f);
-        } else {
-            buttonStartRest.setAlpha(1f);
-            buttonSkipRest.setAlpha(0.5f);
-        }
+        boolean editable = loaded && !isFinishingWorkout;
+        buttonPause.setEnabled(editable);
+        buttonStartRest.setEnabled(editable && !isPaused && !isRestRunning);
+        buttonSkipRest.setEnabled(editable && isRestRunning);
     }
 
     private String formatTime(int totalSeconds) {

@@ -1,0 +1,24 @@
+<resources>
+<string name="session_label">ТРЕНИРОВКА / В ПРОЦЕССЕ</string>
+<string name="session_loading">Загружаем черновик…</string>
+<string name="session_saving">Сохраняем на устройстве…</string>
+<string name="session_saved">Черновик сохранён на устройстве</string>
+<string name="session_save_failed">Не сохранено · нажмите, чтобы повторить</string>
+<string name="session_input_error">Проверьте поля · в черновике последние корректные значения</string>
+<string name="session_progress">Подходы: %1$d / %2$d</string>
+<string name="session_exercise_progress">%1$d из %2$d выполнено</string>
+<string name="session_weight">кг</string><string name="session_reps">Повторы</string>
+<string name="session_weight_input">Вес подхода %1$d, кг</string><string name="session_reps_input">Повторения подхода %1$d</string>
+<string name="session_set_actions">Действия с подходом %1$d</string>
+<string name="session_set_done">Подход %1$d выполнен</string>
+<string name="session_add">+ Подход</string><string name="session_warmup">Разминочный подход</string>
+<string name="session_working">Рабочий подход</string><string name="session_remove">Удалить подход</string>
+<string name="session_remove_title">Удалить подход?</string><string name="session_remove_body">Значения этого подхода будут удалены из текущей тренировки.</string>
+<string name="session_invalid_weight">Вес: 0–10000</string><string name="session_invalid_reps">Повторы: 1–10000</string>
+<string name="session_rest">ОТДЫХ</string><string name="session_rest_ready">Готов к запуску · %1$d сек</string>
+<string name="session_rest_running">Отдых идёт</string><string name="session_paused">Тренировка на паузе</string>
+<string name="session_rest_start">Начать отдых</string><string name="session_rest_skip">Пропустить</string>
+<string name="session_finish">Завершить тренировку</string><string name="session_back">Вернуться к тренировкам</string>
+<string name="session_pause">Приостановить тренировку</string><string name="session_resume">Продолжить тренировку</string>
+<string name="session_fix_fields">Исправьте вес и повторения перед завершением</string>
+</resources>
