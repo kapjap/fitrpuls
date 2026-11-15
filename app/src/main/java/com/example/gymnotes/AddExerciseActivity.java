@@ -28,16 +28,7 @@ public class AddExerciseActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_add_exercise);
 
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(
-                    v.getPaddingLeft(),
-                    systemBars.top,
-                    v.getPaddingRight(),
-                    systemBars.bottom
-            );
-            return insets;
-        });
+        WorkoutScreenUi.install(this, findViewById(R.id.main));
 
         buttonBack = findViewById(R.id.buttonBack);
         buttonSaveExercise = findViewById(R.id.buttonSaveExercise);
@@ -47,6 +38,12 @@ public class AddExerciseActivity extends AppCompatActivity {
         editReps = findViewById(R.id.editReps);
         editWeight = findViewById(R.id.editWeight);
 
+        if(savedInstanceState==null && getIntent().hasExtra("edit_index")) {
+            editExerciseName.setText(getIntent().getStringExtra("name"));
+            editSets.setText(String.valueOf(getIntent().getIntExtra("sets",1)));
+            editReps.setText(String.valueOf(getIntent().getIntExtra("reps",1)));
+            editWeight.setText(String.valueOf(getIntent().getDoubleExtra("weight",0)));
+        }
         buttonBack.setOnClickListener(v -> finish());
         buttonSaveExercise.setOnClickListener(v -> saveExercise());
     }
@@ -117,12 +114,13 @@ public class AddExerciseActivity extends AppCompatActivity {
             return;
         }
 
-        if (weight < 0) {
+        if (!Double.isFinite(weight) || weight < 0) {
             editWeight.setError("Вес не может быть отрицательным");
             return;
         }
 
         Intent resultIntent = new Intent();
+        resultIntent.putExtra("edit_index",getIntent().getIntExtra("edit_index",-1));
         resultIntent.putExtra("name", name);
         resultIntent.putExtra("sets", sets);
         resultIntent.putExtra("reps", reps);

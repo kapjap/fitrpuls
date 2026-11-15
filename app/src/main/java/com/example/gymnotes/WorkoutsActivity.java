@@ -24,8 +24,10 @@ public class WorkoutsActivity extends AppCompatActivity {
 
     @Override protected void onCreate(Bundle state) {
         super.onCreate(state);
+        androidx.activity.EdgeToEdge.enable(this);
         setContentView(R.layout.activity_workouts);
         MainNavigation.attach(this,1);
+        WorkoutScreenUi.install(this, ((android.view.ViewGroup)findViewById(android.R.id.content)).getChildAt(0));
         database=DatabaseProvider.get(this);
         RecyclerView list=findViewById(R.id.recyclerWorkouts);
         list.setLayoutManager(new LinearLayoutManager(this));
@@ -60,7 +62,7 @@ public class WorkoutsActivity extends AppCompatActivity {
                     adapter.setDraftIds(drafts);adapter.updateList(new ArrayList<>(workouts));
                     ((TextView)findViewById(R.id.workoutCount)).setText(getString(R.string.ag_count,workouts.size()));
                     findViewById(R.id.recyclerWorkouts).setVisibility(workouts.isEmpty()?View.GONE:View.VISIBLE);
-                    if(workouts.isEmpty())showState(R.string.ag_empty,R.string.ag_empty_body,R.string.ag_new,this::createWorkout);
+                    if(workouts.isEmpty())showState(R.string.ag_empty,R.string.ag_empty_body,0,null);
                     else findViewById(R.id.workoutState).setVisibility(View.GONE);
                 });
             }catch(Exception e){runOnUiThread(()->{

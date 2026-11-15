@@ -35,7 +35,10 @@ public class CreateWorkoutActivity extends AppCompatActivity {
     private EditText editWorkoutTime;
     private EditText editWorkoutRest;
 
-    private CardView cardAddExercise;
+    private android.view.View cardAddExercise;
+    private String draftOwner;
+    private boolean saving;
+    private WorkoutCreationViewModel creation;
     private RecyclerView recyclerExercises;
 
     private ArrayList<ExerciseEntity> exerciseList;
@@ -51,16 +54,7 @@ public class CreateWorkoutActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_create_workout);
 
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(
-                    v.getPaddingLeft(),
-                    systemBars.top,
-                    v.getPaddingRight(),
-                    systemBars.bottom
-            );
-            return insets;
-        });
+        WorkoutScreenUi.install(this, findViewById(R.id.main));
 
         buttonBack = findViewById(R.id.buttonBack);
         buttonSaveWorkout = findViewById(R.id.buttonSaveWorkout);
@@ -72,13 +66,45 @@ public class CreateWorkoutActivity extends AppCompatActivity {
 
         appDatabase = DatabaseProvider.get(this);
 
-        exerciseList = new ArrayList<>();
-        adapter = new ExerciseAdapter(exerciseList);
+        FirebaseUser owner = FirebaseAuth.getInstance().getCurrentUser();
+        draftOwner = owner == null ? null : owner.getUid();
+        exerciseList = WorkoutFormDraft.restore(savedInstanceState == null ? null : savedInstanceState.getString("exercise_draft"), draftOwner);
+        adapter = new ExerciseAdapter(exerciseList, new ExerciseAdapter.Actions() {
+            public void edit(int position) {
+                if (saving) return;
+                ExerciseEntity exercise=exerciseList.get(position);
+                Intent intent=new Intent(CreateWorkoutActivity.this,AddExerciseActivity.class);
+                intent.putExtra("edit_index",position).putExtra("name",exercise.name).putExtra("sets",exercise.sets)
+                        .putExtra("reps",exercise.reps).putExtra("weight",exercise.weight);
+                startActivityForResult(intent,ADD_EXERCISE_REQUEST);
+            }
+            public void remove(int position) {
+                if (saving) return;
+                new androidx.appcompat.app.AlertDialog.Builder(CreateWorkoutActivity.this)
+                        .setTitle(R.string.exercise_remove).setMessage(exerciseList.get(position).name)
+                        .setNegativeButton(android.R.string.cancel,null)
+                        .setPositiveButton(R.string.exercise_remove,(d,w)->{
+                            if(saving)return;
+                            exerciseList.remove(position);adapter.notifyDataSetChanged();updateExerciseStatus();
+                        }).show();
+            }
+        });
 
         recyclerExercises.setLayoutManager(new LinearLayoutManager(this));
         recyclerExercises.setAdapter(adapter);
 
-        loadRestDurationFromSettings();
+        if(savedInstanceState==null) loadRestDurationFromSettings();
+        updateExerciseStatus();
+        creation=new androidx.lifecycle.ViewModelProvider(this).get(WorkoutCreationViewModel.class);
+        creation.state().observe(this,state->{
+            saving=state==WorkoutCreationViewModel.State.SAVING || state==WorkoutCreationViewModel.State.SAVED;
+            buttonSaveWorkout.setEnabled(!saving);cardAddExercise.setEnabled(!saving);
+            if(state==WorkoutCreationViewModel.State.SAVED){
+                Toast.makeText(this,"Тренировка сохранена",Toast.LENGTH_SHORT).show();finish();
+            }else if(state==WorkoutCreationViewModel.State.ERROR){
+                Toast.makeText(this,"Не удалось сохранить. Попробуйте ещё раз.",Toast.LENGTH_LONG).show();
+            }
+        });
 
         buttonBack.setOnClickListener(v -> finish());
 
@@ -113,13 +139,16 @@ public class CreateWorkoutActivity extends AppCompatActivity {
                 exercise.reps = reps;
                 exercise.weight = weight;
 
-                exerciseList.add(exercise);
-                adapter.notifyItemInserted(exerciseList.size() - 1);
+                int index=data.getIntExtra("edit_index",-1);
+                if(index>=0&&index<exerciseList.size()){exerciseList.set(index,exercise);adapter.notifyItemChanged(index);}
+                else{exerciseList.add(exercise);adapter.notifyItemInserted(exerciseList.size()-1);}
+                updateExerciseStatus();
             }
         }
     }
 
     private void saveWorkout() {
+        if(saving)return;
         String title = editWorkoutTitle.getText().toString().trim();
         String timeText = editWorkoutTime.getText().toString().trim();
         String restText = editWorkoutRest.getText().toString().trim();
@@ -176,23 +205,22 @@ public class CreateWorkoutActivity extends AppCompatActivity {
         }
 
         String uid = currentUser.getUid();
+        if(!uid.equals(draftOwner)){
+            Toast.makeText(this,"Аккаунт изменился. Откройте создание тренировки заново.",Toast.LENGTH_LONG).show();
+            return;
+        }
 
-        int finalEstimatedTime = estimatedTime;
-        int finalRestSeconds = restSeconds;
+        creation.save(appDatabase,uid,title,estimatedTime,restSeconds,exerciseList);
+    }
 
-        buttonSaveWorkout.setEnabled(false);
-        ArrayList<ExerciseEntity> snapshot = new ArrayList<>(exerciseList);
-        SessionRepository.IO.execute(() -> {
-            try {
-                appDatabase.runInTransaction(() -> {
-                    long id=appDatabase.workoutDao().insertWorkout(new WorkoutEntity(title,snapshot.size(),finalEstimatedTime,finalRestSeconds,uid));
-                    for(ExerciseEntity ex:snapshot){ex.workoutId=(int)id;appDatabase.exerciseDao().insert(ex);}
-                });
-                runOnUiThread(() -> {Toast.makeText(this,"Тренировка сохранена",Toast.LENGTH_SHORT).show();finish();});
-            } catch(Exception e) {
-                runOnUiThread(() -> {buttonSaveWorkout.setEnabled(true);Toast.makeText(this,"Не удалось сохранить. Попробуйте ещё раз.",Toast.LENGTH_LONG).show();});
-            }
-        });
+    private void updateExerciseStatus() {
+        ((TextView)findViewById(R.id.exerciseStatus)).setText(exerciseList.isEmpty()
+                ? getString(R.string.exercise_empty) : getString(R.string.exercise_count,exerciseList.size()));
+    }
+
+    @Override protected void onSaveInstanceState(Bundle out) {
+        out.putString("exercise_draft",WorkoutFormDraft.encode(draftOwner,exerciseList));
+        super.onSaveInstanceState(out);
     }
 
     private String getUserKey(String baseKey) {

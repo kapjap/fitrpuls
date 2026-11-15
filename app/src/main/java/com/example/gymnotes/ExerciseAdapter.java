@@ -13,9 +13,12 @@ import java.util.Locale;
 
 public class ExerciseAdapter extends RecyclerView.Adapter<ExerciseAdapter.ExerciseViewHolder> {
 
+    interface Actions { void edit(int position); void remove(int position); }
+    private final Actions actions;
     private List<ExerciseEntity> exercises;
 
-    public ExerciseAdapter(List<ExerciseEntity> exercises) {
+    public ExerciseAdapter(List<ExerciseEntity> exercises, Actions actions) {
+        this.actions=actions;
         this.exercises = exercises;
     }
 
@@ -32,15 +35,18 @@ public class ExerciseAdapter extends RecyclerView.Adapter<ExerciseAdapter.Exerci
         ExerciseEntity exercise = exercises.get(position);
         holder.nameText.setText(exercise.name);
 
-        String info;
-        if (exercise.weight > 0) {
-            info = exercise.sets + " подхода × " + exercise.reps + " повторений × " +
-                    String.format(Locale.US, "%.0f", exercise.weight) + " кг";
-        } else {
-            info = exercise.sets + " подхода × " + exercise.reps + " повторений";
-        }
-
-        holder.infoText.setText(info);
+        String weight=new java.text.DecimalFormat("0.##").format(exercise.weight);
+        holder.infoText.setText(holder.itemView.getContext().getString(R.string.exercise_summary,exercise.sets,exercise.reps,weight));
+        holder.itemView.findViewById(R.id.exerciseMenu).setOnClickListener(v->{
+            android.widget.PopupMenu menu=new android.widget.PopupMenu(v.getContext(),v);
+            menu.getMenu().add(0,1,0,R.string.exercise_edit);
+            menu.getMenu().add(0,2,1,R.string.exercise_remove);
+            menu.setOnMenuItemClickListener(item->{
+                int index=holder.getBindingAdapterPosition();if(index==RecyclerView.NO_POSITION)return false;
+                if(item.getItemId()==1)actions.edit(index);else actions.remove(index);
+                return true;
+            });menu.show();
+        });
     }
 
     @Override
