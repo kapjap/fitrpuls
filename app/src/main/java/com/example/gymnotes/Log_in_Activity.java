@@ -95,6 +95,8 @@ public class Log_in_Activity extends AppCompatActivity {
             public void onChanged(FirebaseUser firebaseUser) {
                 if (firebaseUser != null) {
                     Intent intent = new Intent(Log_in_Activity.this, HomeMenuActivity.class);
+                    if (viewModel.consumeWelcomeBack(firebaseUser.getUid()))
+                        intent.putExtra(WelcomeBackEvent.SIGNED_IN_UID, firebaseUser.getUid());
                     startActivity(intent);
                     finish();
                 }

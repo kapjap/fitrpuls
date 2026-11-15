@@ -14,6 +14,8 @@ import java.util.Locale;
 
 public class HomeMenuActivity extends AppCompatActivity {
     private FirstLevelEffect firstLevelEffect;
+    private String pendingWelcomeUid;
+    private long welcomeStartedAt;
     private SessionDraft latestDraft;
     private String progressExplanation;
     @Override protected void onCreate(Bundle state) {
@@ -24,6 +26,12 @@ public class HomeMenuActivity extends AppCompatActivity {
         if(user==null){startActivity(new Intent(this,MainActivity.class));finish();return;}
         String createdUid = getIntent().getStringExtra(FirstLevelEffect.CREATED_UID);
         getIntent().removeExtra(FirstLevelEffect.CREATED_UID);
+        String signedInUid = getIntent().getStringExtra(WelcomeBackEvent.SIGNED_IN_UID);
+        getIntent().removeExtra(WelcomeBackEvent.SIGNED_IN_UID);
+        if (state == null && createdUid == null && user.getUid().equals(signedInUid)) {
+            pendingWelcomeUid = signedInUid;
+            welcomeStartedAt = android.os.SystemClock.elapsedRealtime();
+        }
         if (state == null && user.getUid().equals(createdUid)) firstLevelEffect = FirstLevelEffect.show(this);
         CharacterPreferences character=new CharacterPreferences(this);
         String line=character.greeting(System.currentTimeMillis());
@@ -55,6 +63,13 @@ public class HomeMenuActivity extends AppCompatActivity {
         model.insight(user.getUid()).observe(this,value->{progressExplanation=value;findViewById(R.id.explainBody).setEnabled(value!=null);});
         model.history(user.getUid()).observe(this,history->{
             long xp=TrainingXp.total(history);int level=TrainingXp.level(xp);
+            // Show only after Room supplies the same history used by the dashboard.
+            String pending = pendingWelcomeUid;
+            pendingWelcomeUid = null;
+            FirebaseUser current = FirebaseAuth.getInstance().getCurrentUser();
+            if (current != null && WelcomeBackEvent.canPresent(pending, current.getUid(),
+                    android.os.SystemClock.elapsedRealtime() - welcomeStartedAt))
+                firstLevelEffect = FirstLevelEffect.showWelcomeBack(this, level);
             TextView xpStatus=findViewById(R.id.xpStatus);
             xpStatus.setText(getString(R.string.home_xp,level,xp));
             if(character.consumeLevelUp(level)) {
@@ -83,6 +98,7 @@ public class HomeMenuActivity extends AppCompatActivity {
         });
     }
     @Override protected void onStop() {
+        pendingWelcomeUid = null;
         if (firstLevelEffect != null) firstLevelEffect.dismiss();
         super.onStop();
     }

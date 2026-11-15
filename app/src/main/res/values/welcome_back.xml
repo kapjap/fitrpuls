@@ -1,0 +1,4 @@
+<resources>
+<string name="welcome_back_title">С ВОЗВРАЩЕНИЕМ</string>
+<string name="welcome_back_level">LEVEL %1$02d</string>
+</resources>

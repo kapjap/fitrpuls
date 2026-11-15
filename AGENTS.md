@@ -11,5 +11,5 @@
 - Update `docs/PROGRESS.md` with commands, results, blockers and the precise next task before ending a substantial session.
 
 - Work one screen at a time: finish screen → build/check → commit → next screen. Home and workout list redesign are completed in the 2026-11-15 checkpoint; do not repeat them.
-- The latest stage covers approved login/register copy, reset-password styling, compact home and the owner-added FIRST LEVEL event. Stop after commit/push and Actions check; await phone review. Do not expand scope. Runtime/Firebase end-to-end checks remain pending. Read latest PROGRESS first.
+- Latest stage: WELCOME BACK only after explicit login success, real Room-derived level, no login XP, no effect on auth restore. Stop after commit/push and Actions check; await phone review. Runtime/Firebase checks remain pending. Read latest PROGRESS first.
 - Never overwrite the owner's `.github/workflows/android.yml`. After each stage: local build/tests → commit → push → check Actions for that exact SHA and report APK build status. Owner downloads `ANTI-GYM-Debug` from Actions; no manual APK delivery.

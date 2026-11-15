@@ -16,6 +16,8 @@ import com.google.firebase.auth.FirebaseUser;
 
 public class LoginViewModel extends ViewModel {
     private FirebaseAuth auth;
+    private final WelcomeBackEvent welcomeBack = new WelcomeBackEvent();
+    public boolean consumeWelcomeBack(String uid) { return welcomeBack.consume(uid); }
 
     private MutableLiveData<String> error = new MutableLiveData<>();
     private  MutableLiveData<FirebaseUser> user = new MutableLiveData<>();
@@ -28,6 +30,7 @@ public class LoginViewModel extends ViewModel {
         auth.signInWithEmailAndPassword(email,password).addOnSuccessListener(new OnSuccessListener<AuthResult>() {
             @Override
             public void onSuccess(AuthResult authResult) {
+                if (authResult.getUser() != null) welcomeBack.signedIn(authResult.getUser().getUid());
                 user.setValue(authResult.getUser());
             }
         }).addOnFailureListener(new OnFailureListener() {

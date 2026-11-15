@@ -19,18 +19,26 @@ final class FirstLevelEffect {
     private View content, number, active;
 
     static FirstLevelEffect show(Activity activity) {
+        return show(activity, null);
+    }
+    static FirstLevelEffect showWelcomeBack(Activity activity, int level) {
+        return show(activity, level);
+    }
+    private static FirstLevelEffect show(Activity activity, Integer returningLevel) {
         if (!AuthScreenUi.motionAllowed(activity) || !new CharacterPreferences(activity).effects()) return null;
         FirstLevelEffect effect = new FirstLevelEffect();
         try {
             if (activity.isFinishing() || activity.isDestroyed()) return null;
             effect.dialog = new Dialog(activity, R.style.Theme_GymNotes);
-            effect.dialog.setContentView(R.layout.first_level);
+            effect.dialog.setContentView(returningLevel == null ? R.layout.first_level : R.layout.welcome_back);
             effect.dialog.setCancelable(true);
             effect.dialog.findViewById(R.id.firstLevelSkip).setOnClickListener(v -> effect.dismiss());
             effect.dialog.setOnDismissListener(d -> effect.cleanup());
             effect.content = effect.dialog.findViewById(R.id.firstLevelContent);
             effect.number = effect.dialog.findViewById(R.id.firstLevelNumber);
             effect.active = effect.dialog.findViewById(R.id.firstLevelActive);
+            if (returningLevel != null)
+                ((android.widget.TextView) effect.number).setText(activity.getString(R.string.welcome_back_level, returningLevel));
             effect.dialog.show();
             Window window = effect.dialog.getWindow();
             if (window != null) {
@@ -48,7 +56,7 @@ final class FirstLevelEffect {
             effect.active.setAlpha(0f);
             effect.number.animate().alpha(1f).setStartDelay(120).setDuration(220).start();
             effect.active.animate().alpha(1f).setStartDelay(250).setDuration(220).start();
-            effect.handler.postDelayed(effect.timeout, 1300);
+            effect.handler.postDelayed(effect.timeout, returningLevel == null ? 1300 : 1000);
             return effect;
         } catch (RuntimeException unavailable) {
             effect.dismiss();
