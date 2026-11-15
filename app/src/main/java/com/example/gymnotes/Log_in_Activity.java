@@ -71,7 +71,7 @@ public class Log_in_Activity extends AppCompatActivity {
 
     private void launchNextScreenReset_email() {
         Intent intent = new Intent(this, Reset_email.class);
-        startActivity(intent);
+        AuthScreenUi.open(this, intent);
     }
 
     private void initViews() {

@@ -25,6 +25,7 @@ import com.google.firebase.auth.FirebaseUser;
 public class MainActivity extends AppCompatActivity {
 
     private FirebaseAuth auth;
+    private FirebaseAuth.AuthStateListener authStateListener;
     private ObjectAnimator entrance;
     private View poster;
     private static final String LOG_TAG = "MainActivity";
@@ -37,14 +38,14 @@ public class MainActivity extends AppCompatActivity {
 
         auth = FirebaseAuth.getInstance();
 
-        auth.addAuthStateListener(firebaseAuth -> {
+        authStateListener = firebaseAuth -> {
             FirebaseUser user = firebaseAuth.getCurrentUser();
             if (user != null) {
                 Log.d(LOG_TAG, "AuthStateListener: Пользователь вошёл");
                 startActivity(new Intent(MainActivity.this, HomeMenuActivity.class));
                 finish();
             }
-        });
+        };
 
         AuthScreenUi.install(this);
         poster = findViewById(R.id.welcomePoster);
@@ -78,7 +79,13 @@ public class MainActivity extends AppCompatActivity {
         entrance.start();
     }
 
+    @Override protected void onStart() {
+        super.onStart();
+        auth.addAuthStateListener(authStateListener);
+    }
+
     @Override protected void onStop() {
+        auth.removeAuthStateListener(authStateListener);
         if (entrance != null) entrance.cancel();
         if (poster != null) poster.setClipBounds(null);
         super.onStop();

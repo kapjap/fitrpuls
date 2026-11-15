@@ -77,6 +77,8 @@ public class Sign_Up_Activity extends AppCompatActivity {
             public void onChanged(FirebaseUser firebaseUser) {
                 if (firebaseUser != null) {
                     Intent intent = new Intent(Sign_Up_Activity.this, HomeMenuActivity.class);
+                    if (viewModel.consumeFirstLevel(firebaseUser.getUid()))
+                        intent.putExtra(FirstLevelEffect.CREATED_UID, firebaseUser.getUid());
                     startActivity(intent);
                     finish();
                 }

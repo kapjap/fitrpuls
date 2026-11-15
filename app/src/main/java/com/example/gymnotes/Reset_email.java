@@ -25,17 +25,15 @@ public class Reset_email extends AppCompatActivity {
 
         viewModel = new ViewModelProvider(this).get(ResetPasswordViewModel.class);
 
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
+        AuthScreenUi.install(this);
+        AuthScreenUi.back(this);
 
         Button button = findViewById(R.id.send_button);
         EditText editText = findViewById(R.id.email_input);
 
         View backButton = findViewById(R.id.back_button);
-        backButton.setOnClickListener(v -> finish());
+        backButton.setOnClickListener(v -> getOnBackPressedDispatcher().onBackPressed());
+        AuthScreenUi.keyboardDone(this, editText, button);
 
         observeViewModel();
 

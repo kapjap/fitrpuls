@@ -1,0 +1,6 @@
+<resources>
+    <string name="first_level_number">LEVEL 01</string>
+    <string name="first_level_active">СИСТЕМА АКТИВИРОВАНА</string>
+    <string name="first_level_xp">0 XP</string>
+    <string name="first_level_skip">Пропустить</string>
+</resources>

@@ -17,6 +17,8 @@ import com.google.firebase.database.FirebaseDatabase;
 
 public class RegistrationViewModel  extends ViewModel {
     private FirebaseAuth auth;
+    private final FirstLevelEvent firstLevel = new FirstLevelEvent();
+    public boolean consumeFirstLevel(String uid) { return firstLevel.consume(uid); }
     private FirebaseDatabase firebaseDatabase;
     private DatabaseReference usersReference;
     private MutableLiveData<String> error = new MutableLiveData<>();
@@ -40,6 +42,7 @@ public class RegistrationViewModel  extends ViewModel {
         auth.createUserWithEmailAndPassword(email,password).addOnSuccessListener(new OnSuccessListener<AuthResult>() {
             @Override
             public void onSuccess(AuthResult authResult) {
+                if (authResult.getUser() != null) firstLevel.accountCreated(authResult.getUser().getUid());
                 user.setValue(authResult.getUser());
                 FirebaseUser firebaseUser = authResult.getUser();
                 if(firebaseUser==null)

@@ -1,0 +1,9 @@
+<resources>
+<string name="home_journal">Личный журнал</string><string name="home_week">НЕДЕЛЯ / ФАКТ</string>
+<string name="home_sessions">тренировки</string><string name="home_minutes">минут</string><string name="home_volume">кг объёма</string>
+<string name="home_last">ПОСЛЕДНИЙ РЕЗУЛЬТАТ</string><string name="home_history">История →</string>
+<string name="home_insight">Сравнение результатов ↗</string><string name="home_insight_title">Что изменилось</string>
+<string name="home_empty_title">Пока без тренировок</string><string name="home_empty_detail">Выберите план, чтобы начать.</string>
+<string name="home_xp">LVL %1$d · %2$d XP</string><string name="home_level_up">LEVEL UP · %1$d</string>
+<style name="HomeUtility" parent="Widget.Material3.Button.TextButton"><item name="android:textSize">13sp</item><item name="android:minHeight">48dp</item><item name="android:paddingLeft">4dp</item><item name="android:paddingRight">4dp</item><item name="android:textAllCaps">false</item></style>
+</resources>

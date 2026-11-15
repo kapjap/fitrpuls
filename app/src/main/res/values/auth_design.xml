@@ -1,8 +1,8 @@
 <resources>
     <string name="auth_login_index">02 / ВХОД</string>
     <string name="auth_signup_index">03 / РЕГИСТРАЦИЯ</string>
-    <string name="auth_login_title">ТВОЯ\nЗАПИСЬ.</string>
-    <string name="auth_signup_title">НОВАЯ\nЗАПИСЬ.</string>
+    <string name="auth_login_title">С возвращением.</string>
+    <string name="auth_signup_title">Первый шаг.</string>
     <string name="auth_back">Назад</string>
     <style name="ThemeOverlay.AntiGym.Auth" parent="ThemeOverlay.Material3">
         <item name="colorPrimary">@color/welcome_lime</item>
@@ -48,4 +48,7 @@
         <item name="android:textSize">14sp</item>
         <item name="cornerRadius">0dp</item>
     </style>
+    <string name="auth_reset_index">04 / СБРОС ПАРОЛЯ</string>
+    <string name="auth_reset_title">Сброс\nпароля.</string>
+    <string name="auth_reset_hint">Укажите почту аккаунта — отправим ссылку для смены пароля.</string>
 </resources>

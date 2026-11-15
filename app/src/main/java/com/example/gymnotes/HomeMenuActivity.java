@@ -13,18 +13,23 @@ import java.util.Date;
 import java.util.Locale;
 
 public class HomeMenuActivity extends AppCompatActivity {
+    private FirstLevelEffect firstLevelEffect;
     private SessionDraft latestDraft;
+    private String progressExplanation;
     @Override protected void onCreate(Bundle state) {
         super.onCreate(state);
         setContentView(R.layout.activity_home_menu);
         MainNavigation.attach(this, 0);
         FirebaseUser user=FirebaseAuth.getInstance().getCurrentUser();
         if(user==null){startActivity(new Intent(this,MainActivity.class));finish();return;}
+        String createdUid = getIntent().getStringExtra(FirstLevelEffect.CREATED_UID);
+        getIntent().removeExtra(FirstLevelEffect.CREATED_UID);
+        if (state == null && user.getUid().equals(createdUid)) firstLevelEffect = FirstLevelEffect.show(this);
         CharacterPreferences character=new CharacterPreferences(this);
         String line=character.greeting(System.currentTimeMillis());
         if(line!=null){((TextView)findViewById(R.id.subtitle)).setText(line);findViewById(R.id.subtitle).setVisibility(android.view.View.VISIBLE);}
         String name=user.getDisplayName();
-        if(name!=null&&!name.trim().isEmpty()) ((TextView)findViewById(R.id.greeting)).setText("С возвращением, "+name.trim());
+        if(name!=null&&!name.trim().isEmpty()) ((TextView)findViewById(R.id.greeting)).setText(name.trim());
         findViewById(R.id.startWorkout).setOnClickListener(v->{
             if(latestDraft==null){open(WorkoutsActivity.class);return;}
             startActivity(new Intent(this,WorkoutSessionActivity.class).putExtra("workout_id",latestDraft.workoutId));
@@ -43,13 +48,17 @@ public class HomeMenuActivity extends AppCompatActivity {
                 try {SessionSnapshot snapshot=new com.google.gson.Gson().fromJson(draft.payload,SessionSnapshot.class);if(snapshot!=null && snapshot.title!=null)detail.setText(snapshot.title);}catch(RuntimeException ignored){}
             }
         });
-        model.insight(user.getUid()).observe(this,value->((TextView)findViewById(R.id.explainBody)).setText(value));
+        findViewById(R.id.explainBody).setEnabled(false);
+        findViewById(R.id.explainBody).setOnClickListener(v -> new androidx.appcompat.app.AlertDialog.Builder(this)
+                .setTitle(R.string.home_insight_title).setMessage(progressExplanation)
+                .setPositiveButton(android.R.string.ok, null).show());
+        model.insight(user.getUid()).observe(this,value->{progressExplanation=value;findViewById(R.id.explainBody).setEnabled(value!=null);});
         model.history(user.getUid()).observe(this,history->{
             long xp=TrainingXp.total(history);int level=TrainingXp.level(xp);
             TextView xpStatus=findViewById(R.id.xpStatus);
-            xpStatus.setText("Уровень "+level+" · "+xp+" XP · за регулярность, не за вес");
+            xpStatus.setText(getString(R.string.home_xp,level,xp));
             if(character.consumeLevelUp(level)) {
-                xpStatus.setText("LEVEL UP · "+level+" — твой ритм становится привычкой");
+                xpStatus.setText(getString(R.string.home_level_up,level));
                 if(android.provider.Settings.Global.getFloat(getContentResolver(),android.provider.Settings.Global.ANIMATOR_DURATION_SCALE,1f)>0){xpStatus.setAlpha(0.3f);xpStatus.animate().alpha(1f).setDuration(450).start();}
             }
             Calendar week=Calendar.getInstance();
@@ -60,17 +69,22 @@ public class HomeMenuActivity extends AppCompatActivity {
             for(CompletedWorkoutEntity w:history)if(w.getCompletedAt()>=week.getTimeInMillis()){
                 count++;minutes+=w.getDurationMinutes();volume+=w.getTotalWeight();
             }
-            ((TextView)findViewById(R.id.weeklyStats)).setText(count+" тренировок\n"+minutes+" мин");
-            ((TextView)findViewById(R.id.weeklyDetail)).setText(String.format(Locale.getDefault(),"Объём: %,.0f кг · сохранено локально",volume));
+            ((TextView)findViewById(R.id.weeklyStats)).setText(String.valueOf(count));
+            ((TextView)findViewById(R.id.weeklyMinutes)).setText(String.valueOf(minutes));
+            ((TextView)findViewById(R.id.weeklyDetail)).setText(String.format(Locale.getDefault(),"%,.0f",volume));
             if(history.isEmpty()){
-                ((TextView)findViewById(R.id.lastWorkout)).setText("Здесь начинается твоя история");
-                ((TextView)findViewById(R.id.lastDetail)).setText("Создай тренировку, отметь выполненные подходы и сохрани результат.");
+                ((TextView)findViewById(R.id.lastWorkout)).setText(R.string.home_empty_title);
+                ((TextView)findViewById(R.id.lastDetail)).setText(R.string.home_empty_detail);
             }else{
                 CompletedWorkoutEntity last=history.get(0);
                 ((TextView)findViewById(R.id.lastWorkout)).setText(last.getTitle());
                 ((TextView)findViewById(R.id.lastDetail)).setText(DateFormat.getDateInstance().format(new Date(last.getCompletedAt()))+" · "+last.getDurationMinutes()+" мин · "+last.getExerciseCount()+" упражнений");
             }
         });
+    }
+    @Override protected void onStop() {
+        if (firstLevelEffect != null) firstLevelEffect.dismiss();
+        super.onStop();
     }
     @Override protected void onResume() {
         super.onResume();
